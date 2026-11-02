@@ -1,0 +1,24 @@
+name: ${COMPOSE_PROJECT_NAME:-observability-stack}
+
+# PR #1: fundación del proyecto.
+# Los servicios se incorporarán en los PR funcionales correspondientes.
+services: {}
+
+networks:
+  observability:
+    name: ${COMPOSE_PROJECT_NAME:-observability-stack}-network
+    driver: bridge
+  observability-internal:
+    name: ${COMPOSE_PROJECT_NAME:-observability-stack}-internal
+    driver: bridge
+    internal: true
+
+volumes:
+  prometheus-data:
+    name: ${COMPOSE_PROJECT_NAME:-observability-stack}-prometheus-data
+  loki-data:
+    name: ${COMPOSE_PROJECT_NAME:-observability-stack}-loki-data
+  grafana-data:
+    name: ${COMPOSE_PROJECT_NAME:-observability-stack}-grafana-data
+  jaeger-data:
+    name: ${COMPOSE_PROJECT_NAME:-observability-stack}-jaeger-data

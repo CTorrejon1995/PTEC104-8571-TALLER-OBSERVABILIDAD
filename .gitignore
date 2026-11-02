@@ -1,0 +1,27 @@
+# Variables y secretos locales
+.env
+.env.*
+!.env.example
+
+# Datos persistentes y artefactos locales
+data/
+*.log
+*.tmp
+*.swp
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# IDE
+.vscode/
+.idea/
+
+# Evidencias generadas localmente (mantener la carpeta mediante .gitkeep)
+docs/evidence/*
+!docs/evidence/.gitkeep
