@@ -14,58 +14,131 @@ Proyecto académico de Infraestructura TI para desplegar y validar una plataform
 El stack se organiza en cuatro capas:
 
 1. **Fuentes:** sistema operativo, dispositivo de red simulado, logs JSON y microservicios.
-2. **Recolección y procesamiento:** Prometheus, SNMP Exporter, Promtail y OpenTelemetry Collector.
+2. **Recolección y procesamiento:** Prometheus, Node Exporter, SNMP Exporter, Promtail y OpenTelemetry Collector.
 3. **Almacenamiento y consulta:** Prometheus, Loki y Jaeger.
 4. **Visualización y operación:** Grafana, dashboards y notificaciones Webhook.
 
-La arquitectura se implementará incrementalmente en seis Pull Requests. Este PR #1 crea únicamente la estructura, la base de Docker Compose y la automatización inicial; no despliega todavía componentes funcionales de observabilidad.
+El desarrollo se implementa incrementalmente en seis Pull Requests. PR #1 establece la fundación del repositorio. PR #2 incorpora la recolección de métricas; los PR posteriores añadirán logs, visualización, alertas y trazas.
 
-## Tecnologías previstas
+## Estado de implementación
 
-Docker Compose, PowerShell, Prometheus, Node Exporter, SNMP Exporter, Loki, Promtail, Grafana, OpenTelemetry Collector y Jaeger. Las imágenes de los servicios se incorporarán con versiones explícitas y compatibles en los PR correspondientes.
+### PR #2 — Infrastructure & Metrics
+
+Servicios incluidos:
+
+| Servicio | Imagen / origen | Función |
+|---|---|---|
+| Prometheus | `prom/prometheus:v3.14.0` | Scraping y almacenamiento de métricas |
+| Node Exporter | `prom/node-exporter:v1.12.1` | Métricas del entorno Linux de Docker |
+| SNMP Exporter | `prom/snmp-exporter:v0.31.0` | Traducción de SNMP a métricas Prometheus |
+| SNMP Agent | Imagen local `observability-snmp-agent:1.0.0` | Simulación de un dispositivo con Net-SNMP |
+
+**Consideración sobre Windows y Docker Desktop:** Node Exporter es un exportador de métricas Linux. En esta configuración contenedorizada, las rutas `/proc`, `/sys` y `/` se montan desde el entorno Linux donde corre el daemon de Docker. En Docker Desktop para Windows esto corresponde al entorno Linux/VM de Docker Desktop, no al sistema operativo Windows anfitrión. Por tanto, no debe interpretarse como telemetría nativa de Windows. La recolección de métricas específicas de Windows requeriría `windows_exporter`, fuera del alcance de este PR.
+
+El agente SNMP solo está conectado a la red Docker interna y no publica UDP/161 en el host. La comunidad SNMPv2c `public` es de laboratorio y no proporciona cifrado.
 
 ## Requisitos previos
 
 - Windows 10/11.
-- Docker Desktop instalado y en ejecución.
-- Docker Compose v2 disponible mediante `docker compose`.
+- Docker Desktop instalado y en ejecución, con contenedores Linux habilitados.
+- Docker Compose disponible mediante `docker compose`.
 - PowerShell 5.1 o PowerShell 7.
 - Git para el flujo de ramas y Pull Requests.
 
 ## Instalación
 
 1. Clonar el repositorio.
-2. Copiar `.env.example` a `.env`.
-3. Revisar las variables locales de `.env`.
-4. Ejecutar la validación:
+2. Copiar `.env.example` a `.env` si aún no existe.
+3. Revisar las variables locales.
+4. Validar las configuraciones:
 
 ```powershell
 Copy-Item .env.example .env
 .\dev.ps1 validate
 ```
 
-No se requieren puertos publicados ni servicios en ejecución durante PR #1.
+## Ejecución
 
-## Ejecución y administración
+Construir el simulador local e iniciar los servicios:
 
-El script `dev.ps1` centraliza las operaciones disponibles:
+```powershell
+.\dev.ps1 up -Build
+```
+
+Verificar el estado:
+
+```powershell
+.\dev.ps1 status
+.\dev.ps1 test -Integration
+```
+
+Interfaces locales:
+
+- Prometheus: http://localhost:9090
+- Node Exporter: http://localhost:9100/metrics
+- SNMP Exporter: http://localhost:9116
+
+El agente SNMP no se expone en un puerto del host; SNMP Exporter lo consulta por la red interna de Docker.
+
+## Consultas PromQL
+
+### Porcentaje de utilización de CPU
+
+```promql
+100 * (1 - avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])))
+```
+
+La consulta calcula el porcentaje de tiempo no ocioso promedio entre los CPU lógicos observados por Node Exporter. La ventana de cinco minutos suaviza variaciones puntuales.
+
+### Ancho de banda entrante en Mbps
+
+```promql
+sum by (instance, ifName) (rate(ifHCInOctets{ifName!="lo"}[5m]) * 8 / 1000000)
+```
+
+### Ancho de banda saliente en Mbps
+
+```promql
+sum by (instance, ifName) (rate(ifHCOutOctets{ifName!="lo"}[5m]) * 8 / 1000000)
+```
+
+Los contadores SNMP se expresan en octetos. `rate()` calcula octetos por segundo; multiplicar por ocho convierte a bits por segundo y dividir por un millón convierte a megabits por segundo (Mbps, base decimal). Los nombres de interfaz se incorporan como etiqueta `ifName`.
+
+## Validación y pruebas
+
+```powershell
+.\dev.ps1 validate
+.\dev.ps1 test
+.\dev.ps1 test -Integration
+```
+
+La prueba de integración requiere que el stack esté iniciado. Comprueba la disponibilidad de Prometheus, el estado `UP` de los tres jobs y la presencia de las métricas de CPU y contadores de red.
+
+Para inspeccionar directamente el endpoint del SNMP Exporter:
+
+```text
+http://localhost:9116/snmp?target=snmp-agent:161&auth=public_v2&module=if_mib
+```
+
+La consulta de ancho de banda necesita al menos dos muestras del contador separadas por el intervalo de scraping para que `rate()` calcule una tasa. Para demostrar variación, debe circular tráfico por la interfaz del agente SNMP.
+
+## Administración mediante dev.ps1
 
 | Comando | Responsabilidad |
 |---|---|
-| `.\dev.ps1 validate` | Valida el modelo de Docker Compose. |
-| `.\dev.ps1 up` | Prepara el despliegue; informa si aún no hay servicios. |
-| `.\dev.ps1 up -Build` | Construye imágenes antes de iniciar servicios, cuando existan. |
-| `.\dev.ps1 down` | Detiene y elimina contenedores y redes, sin eliminar volúmenes. |
-| `.\dev.ps1 restart` | Reinicia los servicios definidos. |
-| `.\dev.ps1 status` | Muestra el estado de los contenedores. |
-| `.\dev.ps1 logs` | Sigue los logs del proyecto. |
-| `.\dev.ps1 logs -Service nombre` | Sigue los logs de un servicio específico. |
-| `.\dev.ps1 test` | Ejecuta la validación estática disponible en esta fase. |
-| `.\dev.ps1 test -Integration` | Informa que las pruebas de integración se habilitarán cuando existan servicios. |
-| `.\dev.ps1 clean` | Elimina contenedores, redes y volúmenes, previa confirmación. |
-| `.\dev.ps1 clean -Force` | Ejecuta la limpieza destructiva sin pregunta interactiva. |
+| `.\dev.ps1 up` | Inicia los servicios |
+| `.\dev.ps1 up -Build` | Construye el simulador y levanta los servicios |
+| `.\dev.ps1 down` | Detiene contenedores sin eliminar volúmenes |
+| `.\dev.ps1 restart` | Reinicia servicios |
+| `.\dev.ps1 status` | Muestra el estado |
+| `.\dev.ps1 logs` | Sigue los logs |
+| `.\dev.ps1 logs -Service prometheus` | Sigue los logs de Prometheus |
+| `.\dev.ps1 validate` | Valida Compose y configuración Prometheus |
+| `.\dev.ps1 test` | Ejecuta pruebas estáticas |
+| `.\dev.ps1 test -Integration` | Ejecuta verificaciones funcionales de métricas |
+| `.\dev.ps1 clean` | Elimina contenedores, redes y volúmenes tras confirmación |
 
-El comando `migrate` no se implementa en esta fase: no existe aún una migración real que administrar. Se añadirá únicamente si una necesidad técnica concreta lo justifica.
+El comando `migrate` no se implementa mientras no exista una migración real que administrar.
 
 ## Estructura del repositorio
 
@@ -95,14 +168,15 @@ El comando `migrate` no se implementa en esta fase: no existe aún una migració
 - [Pruebas y validación](tests/README.md)
 - [Documentación técnica y evidencias](docs/README.md)
 
-## Redes y volúmenes
+## Redes y persistencia
 
-Compose define dos redes: `observability` (bridge) para comunicación general y `observability-internal` (bridge interno) para componentes que no requieran salida externa. También declara volúmenes nombrados reservados para la persistencia de métricas, logs, Grafana y trazas. Los servicios se conectarán a estas redes y volúmenes en los PR funcionales.
+Compose conserva las redes `observability` y `observability-internal`. Prometheus y los exporters se conectan a la red de observabilidad; el agente SNMP solo pertenece a la red interna, a la que también se conecta SNMP Exporter. Los datos de Prometheus se almacenan en el volumen nombrado `prometheus-data`. Los volúmenes reservados para Loki, Grafana y Jaeger se mantienen para los PR posteriores.
 
-## Estado de la entrega
+` .\dev.ps1 down` no elimina volúmenes. ` .\dev.ps1 clean` es destructivo y requiere confirmación.
 
-PR #1 — Repository Foundation: estructura y archivos base. La validación real con Docker Compose debe ejecutarse en el equipo de desarrollo; este paquete no afirma que Docker haya sido ejecutado en ese entorno.
+## Referencias técnicas
 
-## Licencia y uso académico
-
-Material desarrollado para la práctica final integradora de Infraestructura TI.
+- Prometheus Authors. (s. f.). *Prometheus documentation*. https://prometheus.io/docs/
+- Prometheus Authors. (s. f.). *Node Exporter*. https://github.com/prometheus/node_exporter
+- Prometheus Authors. (s. f.). *SNMP Exporter*. https://github.com/prometheus/snmp_exporter
+- Docker, Inc. (s. f.). *Docker Compose documentation*. https://docs.docker.com/compose/
