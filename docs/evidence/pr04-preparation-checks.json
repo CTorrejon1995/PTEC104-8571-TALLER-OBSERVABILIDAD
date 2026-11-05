@@ -1,0 +1,43 @@
+{
+  "executed_at": "2026-11-05T22:20:56.103504+00:00",
+  "environment": "Linux preparation; no Docker daemon",
+  "grafana_release": {
+    "tag": "v12.4.14",
+    "published_at": "2026-10-27T11:20:05Z",
+    "url": "https://github.com/grafana/grafana/releases/tag/v12.4.14",
+    "assets": [
+      {
+        "name": "grafana_12.4.14_40357248787_linux_amd64.deb",
+        "browser_download_url": "https://github.com/grafana/grafana/releases/download/v12.4.14/grafana_12.4.14_40357248787_linux_amd64.deb",
+        "digest": "sha256:975208c5a184f58d185bad6f112e604a8f8d763e924bc32e743058140e50ac6d",
+        "size": 230738008
+      }
+    ]
+  },
+  "docker_image": "grafana/grafana:12.4.14",
+  "docker_tag_digest": "sha256:ae509d9ae8c1021ca32ec370a9ca975d40165eda9fccd1e1102d317ff8787cd7",
+  "checks": {
+    "compose_5_6_1_config": "passed",
+    "grafana_json_references": "passed",
+    "powershell_7_parser": "passed",
+    "generator_unittests": {
+      "passed": 3
+    },
+    "webhook_http_sqlite_unittests": {
+      "passed": 3
+    },
+    "native_grafana_pipeline_and_restart": "passed",
+    "utf8_under_emulated_windows_1252_default": "passed"
+  },
+  "updated_at": "2026-11-05T22:46:23.368844+00:00",
+  "windows_first_attempt": "Webhook recognition timeout; normal rule restored; original screenshot retained",
+  "not_executed_in_preparation_environment": [
+    "Docker build and deployment in this environment",
+    "Windows PowerShell 5.1 execution",
+    "Grafana SNMP query on Windows",
+    "Docker Desktop storage panel on Windows",
+    "Windows dashboard screenshots"
+  ],
+  "windows_followup": "Independent Grafana test and full stack integration passed after UTF8/UID fix; dashboard, normal rule and firing/resolved UI screenshots received",
+  "windows_evidence_summary": "pr04-windows-evidence-summary.json"
+}

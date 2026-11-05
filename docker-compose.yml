@@ -131,6 +131,57 @@ services:
     security_opt:
       - no-new-privileges:true
 
+  grafana:
+    image: grafana/grafana:12.4.14
+    container_name: ${COMPOSE_PROJECT_NAME:-observability-stack}-grafana
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-observability-lab}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+      GF_ANALYTICS_CHECK_FOR_UPDATES: "false"
+      GF_ANALYTICS_CHECK_FOR_PLUGIN_UPDATES: "false"
+      GF_PLUGINS_CHECK_FOR_UPDATES: "false"
+      GF_UNIFIED_ALERTING_ENABLED: "true"
+      GF_UNIFIED_ALERTING_ALERTMANAGER_CONFIG_POLL_INTERVAL: 5s
+    ports:
+      - "127.0.0.1:3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./dashboards/provisioning/datasources:/etc/grafana/provisioning/datasources:ro
+      - ./dashboards/provisioning/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./dashboards/dashboards:/var/lib/grafana/dashboards:ro
+      - ${GRAFANA_ALERTING_DIR:-./dashboards/alerting}:/etc/grafana/provisioning/alerting:ro
+    depends_on:
+      - prometheus
+      - loki
+      - webhook-receiver
+    networks:
+      - observability
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+
+  webhook-receiver:
+    build:
+      context: ./tools/webhook-receiver
+      dockerfile: Dockerfile
+    image: observability-webhook-receiver:1.0.0
+    container_name: ${COMPOSE_PROJECT_NAME:-observability-stack}-webhook-receiver
+    ports:
+      - "127.0.0.1:8081:8080"
+    volumes:
+      - webhook-data:/data
+      - ./dashboards:/project-dashboards:ro
+    networks:
+      - observability
+    restart: unless-stopped
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+
 networks:
   observability:
     name: ${COMPOSE_PROJECT_NAME:-observability-stack}-network
@@ -153,3 +204,5 @@ volumes:
     name: ${COMPOSE_PROJECT_NAME:-observability-stack}-cloud-logs-data
   promtail-positions:
     name: ${COMPOSE_PROJECT_NAME:-observability-stack}-promtail-positions
+  webhook-data:
+    name: ${COMPOSE_PROJECT_NAME:-observability-stack}-webhook-data

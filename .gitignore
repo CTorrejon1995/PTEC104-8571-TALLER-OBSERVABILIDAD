@@ -23,3 +23,6 @@ venv/
 .idea/
 
 # Las capturas reales de docs/evidence/ se versionan con el informe.
+
+# Configuraciones temporales de la prueba de alertas
+tests/.runtime/

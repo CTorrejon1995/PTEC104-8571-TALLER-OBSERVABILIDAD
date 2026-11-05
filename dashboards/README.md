@@ -1,23 +1,14 @@
 # Dashboards y alertamiento
 
-## Propósito
-Agrupar el aprovisionamiento de Grafana, los dashboards y las reglas de alertamiento.
+El PR #4 implementa Grafana 12.4.14 con provisioning reproducible:
 
-## Responsabilidades
-- `provisioning/`: configuración declarativa de Grafana y datasources.
-- `dashboards/`: definición exportable del Dashboard Operativo.
-- `alerting/`: reglas y configuración de notificaciones.
+- `provisioning/datasources/sources.yml`: Prometheus y Loki con UID estable.
+- `provisioning/dashboards/provider.yml`: carpeta Observabilidad y ruta de dashboard.
+- `dashboards/operativo.json`: CPU, storage seleccionable, red SNMP y logs.
+- `alerting/rules.json`: CPU > 80 % durante 1 minuto.
+- `alerting/contact-points.json`: contacto Webhook local.
+- `alerting/policies.json`: enrutamiento y agrupación.
 
-## Estructura
-```text
-dashboards/
-├── provisioning/
-├── dashboards/
-└── alerting/
-```
+Abrir <http://localhost:3000/d/operativo-observabilidad>. Valores locales iniciales: `admin` / `observability-lab`.
 
-## Dependencias
-Grafana y sus datasources Prometheus y Loki se integrarán en PR #4.
-
-## Ejecución y validación
-La carga del dashboard y la prueba de alertas se documentarán en PR #4. Esta fase no contiene dashboards ni reglas operativas.
+La edición se hace en archivos y se versiona; la UI no sustituye esos archivos. La prueba de integración usa una copia temporal de alertas y restaura la regla normal. Guía y evidencias: [PR04_GRAFANA.md](../docs/PR04_GRAFANA.md).

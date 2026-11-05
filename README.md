@@ -20,7 +20,26 @@ El stack se organiza en cuatro capas:
 
 El desarrollo se implementa incrementalmente en seis Pull Requests. PR #1 establece la fundación del repositorio. PR #2 incorpora la recolección de métricas; los PR posteriores añadirán logs, visualización, alertas y trazas.
 
-Esta versión incorpora el PR #3: centralización de logs. Grafana y alertas (PR #4), trazas (PR #5) y cierre integral (PR #6) siguen pendientes.
+Esta versión incorpora métricas (PR #2), logs (PR #3) y Grafana con alertas Webhook (PR #4). Trazas (PR #5) y cierre integral (PR #6) siguen pendientes.
+
+## PR #4 — Grafana y alerta Webhook
+
+Grafana 12.4.14 carga automáticamente Prometheus, Loki, un Dashboard Operativo de cuatro paneles y una regla CPU > 80 % durante 1 minuto. El receptor local conserva los avisos reales en SQLite.
+
+- Dashboard: <http://localhost:3000/d/operativo-observabilidad>.
+- Usuario/contraseña iniciales: `admin` / `observability-lab`.
+- Avisos Webhook: <http://localhost:8081>.
+- Guía de despliegue, prueba controlada y capturas: [docs/PR04_GRAFANA.md](docs/PR04_GRAFANA.md).
+- Estado de validación por entorno: [docs/PR04_VALIDACION.md](docs/PR04_VALIDACION.md).
+
+~~~powershell
+.\dev.ps1 validate
+.\dev.ps1 up -Build
+.\dev.ps1 status
+.\dev.ps1 test -Integration
+~~~
+
+La integración comprueba métricas, logs y Grafana. Para el Webhook utiliza CPU real con umbral temporal -1 %, espera un aviso enviado por Grafana y restaura 80 % / 1 minuto. Genera un informe con el resultado real. Deben quedar nueve servicios Up. En el dashboard seleccionar el montaje `/mnt/docker-desktop-disk` de Docker Desktop.
 
 ## PR #3 — Logs JSON, Promtail y Loki
 
@@ -49,7 +68,7 @@ Endpoints nuevos:
 - Promtail: http://localhost:9080/ready
 - Targets de Promtail: http://localhost:9080/targets
 
-Las consultas del PR #3 se prueban contra la API de Loki. La vista de logs en Grafana corresponde al PR #4.
+Las consultas del PR #3 se prueban contra la API de Loki. El PR #4 añade la vista de logs en Grafana con filtro de severidad y actualización cada 5 segundos.
 
 Promtail está fuera de soporte según Grafana. Se conserva por ser un componente exigido expresamente en la consigna del laboratorio; la migración futura a Alloy queda fuera de este PR.
 
@@ -145,7 +164,7 @@ Los contadores SNMP se expresan en octetos. `rate()` calcula octetos por segundo
 .\dev.ps1 test -Integration
 ```
 
-La integración requiere que el stack esté iniciado. Comprueba Prometheus, los tres jobs de métricas y los contadores de CPU/red; después prueba la ingesta y las etiquetas de los logs. Ver [tests/README.md](tests/README.md).
+La integración requiere que el stack esté iniciado. Comprueba los jobs de métricas, los contadores CPU/red, la ingesta de logs y Grafana, incluido el envío real de la alerta de prueba y la restauración de su regla. Ver [tests/README.md](tests/README.md).
 
 Para inspeccionar directamente el endpoint del SNMP Exporter:
 
@@ -166,9 +185,9 @@ La consulta de ancho de banda necesita al menos dos muestras del contador separa
 | `.\dev.ps1 status` | Muestra el estado |
 | `.\dev.ps1 logs` | Sigue los logs |
 | `.\dev.ps1 logs -Service prometheus` | Sigue los logs de Prometheus |
-| `.\dev.ps1 validate` | Valida Compose y configuración Prometheus |
+| `.\dev.ps1 validate` | Valida Compose, Prometheus, Loki, Promtail y archivos Grafana |
 | `.\dev.ps1 test` | Ejecuta pruebas estáticas |
-| `.\dev.ps1 test -Integration` | Ejecuta verificaciones funcionales de métricas |
+| `.\dev.ps1 test -Integration` | Comprueba métricas, logs, Grafana y alerta Webhook |
 | `.\dev.ps1 clean` | Elimina contenedores, redes y volúmenes tras confirmación |
 
 El comando `migrate` no se implementa mientras no exista una migración real que administrar.
@@ -203,7 +222,7 @@ El comando `migrate` no se implementa mientras no exista una migración real que
 
 ## Redes y persistencia
 
-El PR #3 conserva las redes y servicios de métricas. Añade Loki y Promtail a `observability`. El generador trabaja sin red y comparte un volumen de archivos con Promtail, que lo monta en lectura. Loki utiliza `loki-data`; los archivos usan `cloud-logs-data` y los offsets de lectura usan `promtail-positions`. Grafana y Jaeger todavía no están desplegados.
+El PR #3 conserva las redes y servicios de métricas. Añade Loki y Promtail a `observability`. El generador trabaja sin red y comparte un volumen de archivos con Promtail, que lo monta en lectura. Loki utiliza `loki-data`; los archivos usan `cloud-logs-data` y los offsets de lectura usan `promtail-positions`. El PR #4 utiliza `grafana-data` para Grafana y añade `webhook-data` para los avisos SQLite. Jaeger sigue pendiente para el PR #5.
 
 ` .\dev.ps1 down` no elimina volúmenes. ` .\dev.ps1 clean` es destructivo y requiere confirmación.
 

@@ -1,19 +1,7 @@
 # Herramientas auxiliares
 
-## Propósito
-Agrupar utilidades de soporte que no pertenecen a la aplicación ni a los componentes principales del stack.
+`webhook-receiver/` contiene el receptor local del PR #4. Usa la biblioteca estándar de Python, recibe las notificaciones de Grafana en `/webhook`, las guarda en SQLite y las muestra en <http://localhost:8081>.
 
-## Responsabilidades
-- `webhook-receiver/`: receptor HTTP local para demostrar la recepción de notificaciones de alertas.
+`/health` comprueba disponibilidad; `/events` devuelve los últimos avisos reales. El contenedor corre como usuario 10001 y solo escribe en `webhook-data`. `validate_grafana.py` revisa JSON y referencias del provisioning, sin sustituir la comprobación con Grafana real.
 
-## Estructura
-```text
-tools/
-└── webhook-receiver/
-```
-
-## Dependencias
-El receptor se implementará e integrará con Grafana en PR #4.
-
-## Ejecución y validación
-Las instrucciones de ejecución y la prueba de recepción se incorporarán en PR #4. PR #1 solo establece la ubicación.
+Ver [PR04_GRAFANA.md](../docs/PR04_GRAFANA.md).

@@ -1,135 +1,158 @@
-# Informe técnico — Stack de Observabilidad Completo
+# Informe técnico — Stack de Observabilidad
 
-> Documento incremental. Registrar comandos y resultados reales del entorno de ejecución. No declarar pruebas aprobadas sin ejecutarlas.
+Estado de esta versión: métricas (PR #2), logs (PR #3), Grafana y alertas Webhook (PR #4) implementados y validados. La trazabilidad distribuida del PR #5 y el cierre integral de la práctica siguen pendientes; este documento es una memoria técnica incremental.
 
 ## 1. Paso a paso documentado
 
-### PR #1 — Repository Foundation
+### Preparación y ejecución
 
-Registrar la preparación del repositorio, estructura y validaciones de Compose ejecutadas en el entorno de desarrollo.
+Benja preparó Windows con Ubuntu en WSL 2, Docker Desktop con contenedores Linux y Git, clonó el repositorio y comprobó los comandos de Docker y Compose antes de aplicar los cambios por ramas. VirtualBox no se utiliza en este procedimiento.
 
-### PR #2 — Infrastructure & Metrics
-
-Procedimiento reproducible:
+Desde la raíz de **esta versión del proyecto**, ya sea el clon actualizado o la carpeta `proyecto/` del paquete:
 
 ```powershell
-Copy-Item .env.example .env
+if (-not (Test-Path .env)) { Copy-Item .env.example .env }
 .\dev.ps1 validate
 .\dev.ps1 up -Build
 .\dev.ps1 status
 .\dev.ps1 test -Integration
 ```
 
-Servicios y endpoints locales:
+Si Windows PowerShell bloquea scripts, `Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned` habilita el procedimiento solo para esa ventana. La guía detallada está en [PR04_GRAFANA.md](PR04_GRAFANA.md).
 
-- Prometheus: http://localhost:9090
-- Node Exporter: http://localhost:9100/metrics
-- SNMP Exporter: http://localhost:9116
+La configuración hasta PR #4 define nueve servicios: Prometheus, Node Exporter, SNMP Exporter, agente SNMP simulado, Loki, Promtail, generador cloud-logs, Grafana y receptor Webhook. Los datos se conservan en volúmenes; `dev.ps1 down` detiene el entorno sin eliminarlos.
 
-Incorporar capturas reales de los targets `prometheus`, `node-exporter` y `snmp-device` en estado `UP`, además de las consultas PromQL ejecutadas.
+### Métricas y logs
 
-La ejecución previa del estudiante en Windows confirmó los cuatro contenedores de métricas en estado Up y las pruebas de integración aprobadas. Se incluyen sus capturas originales en la sección de evidencias. Las capturas de las consultas PromQL siguen pendientes.
+Prometheus obtiene métricas de sí mismo, de Node Exporter y del agente de red mediante SNMP Exporter. La integración verificó los tres targets UP y la disponibilidad de node_cpu_seconds_total, ifHCInOctets e ifHCOutOctets.
 
-### PR #3 — Centralización de logs JSON
+El generador escribe JSON en un volumen compartido; Promtail extrae timestamp y level y envía las líneas a Loki. La integración crea un probe nuevo, lo encuentra mediante LogQL con level=error y verifica info, warn y error. No se acepta un log histórico cualquiera como prueba de ingesta actual. Guía: [PR03_LOGS.md](PR03_LOGS.md).
 
-Se añade un generador sintético, Promtail y Loki. El generador escribe eventos JSON en un volumen Docker compartido; Promtail extrae timestamp y level, conserva el JSON como contenido y envía las líneas a Loki.
+### Dashboard y alerta
 
-Procedimiento desde PowerShell, después de aplicar el PR:
+Abrir <http://localhost:3000/d/operativo-observabilidad> con `admin` / `observability-lab` como credenciales iniciales de laboratorio. El provisioning crea automáticamente las fuentes Prometheus/Loki, el dashboard y las alertas. En storage se selecciona `/mnt/docker-desktop-disk`, identificado en las métricas reales del equipo.
 
-~~~powershell
-.\dev.ps1 validate
-.\dev.ps1 up -Build
-.\dev.ps1 status
-.\dev.ps1 test -Integration
-~~~
+El Dashboard Operativo reúne CPU, storage, tráfico SNMP y logs JSON con filtro de severidad y actualización de 5 segundos. Para streaming de logs se puede abrir Explore, elegir Loki y activar Live con `{job="cloud-logs"}`.
 
-La validación comprueba Compose y las configuraciones de Prometheus, Loki y Promtail. La integración ejecuta primero métricas y después logs. Esta última crea un registro nuevo con identificador único, comprueba que llega a Loki con la etiqueta level=error y verifica info, warn y error.
+La regla normal evalúa CPU >80 % durante 1 minuto, cada 10 segundos. La prueba controlada mantiene la consulta real pero cambia temporalmente el umbral a -1 % y la espera a 0s, recibe un Webhook firing con UID y test_run únicos y restaura 80 % / 1 minuto. Esta prueba no demuestra una sobrecarga real por encima de 80 %.
 
-En el entorno de preparación se ejecutó además el pipeline real con binarios Linux de Loki 3.6.19 y Promtail 3.6.11, junto al generador y PowerShell 7. Su resultado está en `evidence/pr03-native-validation.json`.
+### Validación realizada
 
-Después, Benja ejecutó estos comandos en Windows con Docker Desktop. La configuración fue validada, los siete contenedores quedaron Up y la integración recibió un probe nuevo en Loki con level=error. El resultado final fue `Pruebas de integracion del stack aprobadas.`. Las tres severidades fueron verificadas; las capturas y el registro están en la sección de evidencias.
+La ejecución completa de Windows aprobó validación estática, métricas, logs y Grafana/Webhook. El terminal informó `Pruebas de integracion del stack aprobadas.` y verificó la restauración de la regla normal. Las capturas posteriores muestran el dashboard, la regla Normal y avisos firing/resolved para la misma prueba. El estado y los registros están en [PR04_VALIDACION.md](PR04_VALIDACION.md).
 
-La guía completa y los comandos de consulta están en [PR03_LOGS.md](PR03_LOGS.md).
+El script escribió `docs/evidence/pr04-windows-validation.json` en el PC de Benja. Debe conservarse y añadirse al commit desde ese clon; no se inventa aquí su contenido. La preparación Linux tiene sus propios informes nativos y no se presenta como ejecución Docker de Windows.
 
 ## 2. Justificación técnica
-
-Prometheus utiliza un modelo de scraping periódico y almacena las series temporales en su TSDB. Node Exporter publica métricas del entorno Linux observado. SNMP Exporter consulta el agente SNMP y transforma los objetos IF-MIB en métricas compatibles con Prometheus.
 
 ### CPU
 
 ```promql
-100 * (1 - avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])))
+100 * (1 - avg by (instance) (rate(node_cpu_seconds_total{job="node-exporter",mode="idle"}[5m])))
 ```
 
-La métrica `node_cpu_seconds_total` es un contador acumulativo de segundos de CPU por modo. `rate()` estima la tasa por segundo; al restar el modo `idle` de uno y multiplicar por cien se obtiene el porcentaje medio no ocioso.
+El contador acumula segundos de CPU por modo. `rate()` estima la proporción de tiempo ocioso; restarla de uno y multiplicar por cien produce el porcentaje medio no ocioso. La ventana de 5 minutos suaviza variaciones. En la alerta, A obtiene el porcentaje, B reduce al último valor y C compara con 80. El período de permanencia de 1 minuto evita alertar por una sola evaluación; es distinto de la ventana de cálculo y de la evaluación cada 10 segundos.
 
-### Tráfico de red entrante y saliente
+`NoData` y `Error` se mantienen explícitos para distinguir una pérdida de telemetría de un estado sano. El test no acepta avisos DatasourceNoData o DatasourceError como prueba de una alerta real de CPU.
+
+### Tráfico SNMP en Mbps
 
 ```promql
-sum by (instance, ifName) (rate(ifHCInOctets{ifName!="lo"}[5m]) * 8 / 1000000)
-sum by (instance, ifName) (rate(ifHCOutOctets{ifName!="lo"}[5m]) * 8 / 1000000)
+sum by (instance, ifName) (rate(ifHCInOctets{job="snmp-device",ifName!="lo"}[5m]) * 8 / 1000000)
+sum by (instance, ifName) (rate(ifHCOutOctets{job="snmp-device",ifName!="lo"}[5m]) * 8 / 1000000)
 ```
 
-Los objetos `ifHCInOctets` e `ifHCOutOctets` representan contadores de octetos de 64 bits de IF-MIB. `rate()` permite derivar la tasa de crecimiento del contador; el factor ocho convierte octetos a bits y el divisor 1.000.000 expresa el resultado en Mbps decimales.
+IF-MIB proporciona contadores de octetos de 64 bits. `rate()` calcula octetos por segundo; multiplicar por ocho convierte a bits y dividir por un millón expresa Mbps decimales. ifName permite separar interfaces y se excluye loopback. La captura del laboratorio muestra tráfico pequeño y Grafana ajusta visualmente la escala a b/s; la consulta conserva la conversión a Mbps.
 
-**Limitación del entorno Windows:** Node Exporter se ejecuta como contenedor Linux y observa el entorno Linux/VM de Docker Desktop, no las métricas nativas del kernel Windows. Esta distinción debe explicitarse en la interpretación de resultados.
+### Storage y alcance de las métricas
 
-### Logs y selección de etiquetas
+```promql
+100 * (1 - node_filesystem_avail_bytes{job="node-exporter",mountpoint="/mnt/docker-desktop-disk"} / node_filesystem_size_bytes{job="node-exporter",mountpoint="/mnt/docker-desktop-disk"})
+```
 
-La severidad tiene pocos valores estables (info, warn y error), por lo que level permite filtrar sin multiplicar los streams por cada solicitud. request_id queda en el cuerpo JSON. El pipeline usa el timestamp UTC del evento y conserva el resto del registro para inspeccionarlo posteriormente.
+El panel calcula espacio no disponible para usuarios normales, incluidos bloques reservados. El montaje se elige con un selector; no se fija /dev/sdf porque el dispositivo puede cambiar al reiniciar. En la captura, el resultado fue 5,5 %.
 
-El generador rota archivos a 5 MiB con tres respaldos; Loki conserva datos durante siete días y usa WAL e índices persistentes. Los volúmenes separan los datos del ciclo de vida del contenedor. La prueba busca un identificador nuevo, en vez de aceptar cualquier log histórico como evidencia de funcionamiento.
+Node Exporter observa el entorno Linux de Docker Desktop/WSL. CPU y storage no son telemetría nativa de Windows ni una medición del disco C:. Esta limitación forma parte de la interpretación del laboratorio.
+
+### Logs y etiquetas
+
+```logql
+{job="cloud-logs",level="error"}
+{job="cloud-logs",level="error"} |= "pr3-probe-"
+```
+
+level tiene pocos valores estables y permite filtrar severidad sin crear un stream por solicitud. request_id y el mensaje quedan en el cuerpo JSON para evitar alta cardinalidad. Promtail aplica el timestamp UTC del evento y conserva el registro para inspección.
+
+El generador rota archivos a 5 MiB con tres respaldos. Loki usa almacenamiento persistente, WAL, índices TSDB y retención de siete días. Las posiciones de Promtail permiten continuar la lectura después de reiniciar; las pruebas nativas verificaron recuperación de registros y reanudación de ingesta.
+
+### Provisioning, enrutamiento y prueba controlada
+
+Los UID estables vinculan fuentes, dashboard y reglas sin repetir configuración manual. La política agrupa por carpeta, regla y ejecución de prueba y envía al contacto `webhook-laboratorio`, que llama al receptor por la red de Compose. SQLite conserva los avisos para revisión; la evaluación de Grafana y el HTTP son reales, aunque el destino representa una simulación local de notificaciones.
+
+La prueba utiliza un test_run único y exige ruleUID=cpu-high, estado firing y un valor válido de CPU. La lectura UTF-8 explícita evita que Windows PowerShell altere el título al leer JSON sin BOM. El primer timeout motivó esa corrección y el reemplazo de la comparación por nombre por un UID estable; la repetición posterior de Windows pasó.
 
 ## 3. Evidencia de funcionamiento
 
-### Evidencias disponibles
+### Métricas y logs anteriores
 
-Capturas reales proporcionadas por el estudiante durante la preparación:
+![Validación de métricas en Windows](evidence/pr02-validation-windows.png)
 
-![Validación de configuración en Windows](evidence/pr02-validation-windows.png)
+![Métricas y contenedores en Windows](evidence/pr02-metrics-windows.png)
 
-![Contenedores de métricas y pruebas de integración en Windows](evidence/pr02-metrics-windows.png)
+![Siete contenedores hasta PR #3](evidence/pr03-containers-windows.png)
 
-Prueba ejecutada en el entorno de preparación:
+![Probe nuevo recibido en Loki](evidence/pr03-integration-windows.png)
 
-- [Registro de integración nativa de logs](evidence/pr03-native-validation.json): ingesta de un log nuevo, filtro por severidad, timestamps JSON, prueba PowerShell, rechazo de un probe inexistente y recuperación tras reinicios.
+Registros: [logs en Windows](evidence/pr03-windows-validation.md) e [integración nativa de logs](evidence/pr03-native-validation.json).
 
-### PR #3 validado en Windows
+### Integración completa hasta PR #4
 
-![Validación de configuraciones en Windows](evidence/pr03-config-windows.png)
+![Integración de métricas, logs y Grafana/Webhook aprobada](evidence/pr04-stack-integration-windows.png)
 
-![Siete contenedores del stack en Windows](evidence/pr03-containers-windows.png)
+El registro de esta captura está en [pr04-stack-windows-validation.md](evidence/pr04-stack-windows-validation.md). Confirma targets UP, métricas disponibles, un probe nuevo en Loki, fuentes Grafana OK, aviso Webhook recibido y regla normal restaurada.
 
-![Probe nuevo y pruebas de integración aprobadas](evidence/pr03-integration-windows.png)
+### Dashboard Operativo
 
-Registro de esta ejecución: [pr03-windows-validation.md](evidence/pr03-windows-validation.md).
+![Dashboard con CPU, storage, red y logs](evidence/pr04-dashboard-windows.png)
 
-### Evidencias pendientes para la entrega completa
+El montaje seleccionado es /mnt/docker-desktop-disk; se observan datos de CPU, 5,5 % de espacio no disponible, series de eth0 y eventos JSON. [Registro de observación](evidence/pr04-dashboard-windows.md).
 
-Pendiente de incorporar evidencias reales del entorno:
+### Regla normal
 
-- Salida de `docker compose ps`.
-- Prometheus: página Status / Targets con los tres jobs en `UP`.
-- Prometheus: ejecución de la consulta de CPU.
-- Prometheus: ejecución de las consultas de tráfico entrante y saliente.
-- SNMP Exporter: respuesta del endpoint `/snmp` con las métricas IF-MIB.
-- Resultado de ` .\dev.ps1 test -Integration`.
-- Dashboard y alerta Webhook de Grafana (PR #4).
-- Transacción distribuida y análisis de latencia en Jaeger (PR #5).
+![Regla CPU >80 con estado Normal](evidence/pr04-alert-rule-windows.png)
 
-No incluir capturas simuladas ni resultados no ejecutados.
+La captura muestra CPU de aproximadamente 1,21 %, condición C `Is above 80`, estado Normal y evaluación cada 10 segundos. Su descripción menciona 1 minuto; el campo for=1m fue comprobado por la integración. [Registro de observación](evidence/pr04-alert-rule-windows.md).
+
+### Webhook de activación y aviso posterior
+
+![Aviso firing recibido por el receptor](evidence/pr04-webhook-windows.png)
+
+![Aviso resolved de la misma ejecución](evidence/pr04-webhook-resolved-windows.png)
+
+Los eventos 9 y 10 comparten test_run `pr4-784177d6acb445e7ac34db2aae24f07a`. La CPU registrada ronda 1,6248 %, suficiente para el umbral temporal -1 %, no para presentar un incidente real >80 %. El aviso resolved incluye MissingSeries al retirarse la serie de prueba; la restauración de la regla se comprobó por separado. [Registro del receptor](evidence/pr04-webhook-windows.md).
+
+### Alcance y archivos de evidencia
+
+La integración real de Windows y las tres vistas requeridas por PR #4 están documentadas con capturas originales. [Resumen derivado de esas capturas](evidence/pr04-windows-evidence-summary.json).
+
+La preparación Linux consta en [pr04-native-validation.json](evidence/pr04-native-validation.json): pipeline real, valor predeterminado ANSI emulado, Webhook, restauración y reinicio de Grafana. Omite SNMP y utiliza un filesystem Linux local; la ejecución de Windows cubrió las consultas SNMP y el montaje de Docker Desktop.
+
+Queda pendiente la transacción distribuida y su análisis de latencia en Jaeger, junto a la validación de OpenTelemetry Collector y microservicios del PR #5. No se incluyen trazas ficticias ni se considera finalizada toda la práctica.
 
 ## 4. Conclusiones y lecciones aprendidas
 
-Conclusiones parciales: el bloque de métricas permitió comprobar la disponibilidad de los exporters y el scraping desde Windows con Docker Desktop. El bloque de logs añadió severidad consultable y conservación del timestamp del evento. La prueba con un identificador nuevo evita confundir datos históricos con una ingesta actual.
+Prometheus permitió comprobar disponibilidad, CPU y red; Loki añadió registros filtrables por severidad y conservó el timestamp del evento. Grafana reunió estas señales en una vista operativa y la notificación Webhook demostró evaluación, enrutamiento, entrega e inspección de avisos.
 
-Las posiciones de Promtail y el almacenamiento de Loki permitieron continuar recolectando y recuperar registros después de reiniciar procesos en la prueba nativa. La ejecución posterior en Windows confirmó el arranque Docker y el recorrido real del probe hasta Loki. Quedan pendientes las visualizaciones y alertas del PR #4 y las trazas del PR #5.
+Los identificadores únicos evitaron aceptar datos antiguos como prueba de funcionamiento actual. La persistencia de logs y avisos separa los datos del ciclo de vida de los contenedores. El incidente de codificación mostró la importancia de declarar UTF-8 y usar UID estables en validaciones entre plataformas.
 
-Promtail se utiliza por exigencia del enunciado, aunque Grafana lo declara fuera de soporte. Una evolución del sistema deberá evaluar un agente mantenido como Alloy. No se concluye que el stack completo esté finalizado mientras falten esas validaciones y evidencias.
+La prueba de alertas evitó sobrecargar el equipo: cambió temporalmente una condición, registró el aviso y comprobó su restauración. Elegir el montaje a partir de las métricas observadas evitó atribuir el almacenamiento de Docker a Windows de forma incorrecta. El próximo paso es añadir trazas para localizar latencia entre servicios y completar el tercer pilar.
+
+Promtail se mantiene por exigencia del enunciado pese a su fin de soporte; una evolución del proyecto deberá evaluar un agente mantenido como Alloy. Las conclusiones siguen siendo parciales hasta incorporar y validar las trazas del PR #5 y cerrar la entrega completa.
 
 ## Referencias
 
-- Prometheus Authors. (s. f.). *Query functions*. https://prometheus.io/docs/prometheus/latest/querying/functions/
-- Prometheus Authors. (s. f.). *Node Exporter*. https://github.com/prometheus/node_exporter
-- Prometheus Authors. (s. f.). *SNMP Exporter*. https://github.com/prometheus/snmp_exporter
-- McCloghrie, K., & Kastenholz, F. (2000). *The interfaces group MIB (RFC 2863)*. Internet Engineering Task Force. https://www.rfc-editor.org/rfc/rfc2863
+- Prometheus, funciones PromQL: <https://prometheus.io/docs/prometheus/latest/querying/functions/>.
+- Node Exporter: <https://github.com/prometheus/node_exporter>.
+- SNMP Exporter: <https://github.com/prometheus/snmp_exporter>.
+- IF-MIB, RFC 2863: <https://www.rfc-editor.org/rfc/rfc2863>.
+- Grafana, provisioning de alertas: <https://grafana.com/docs/grafana/latest/alerting/set-up/provision-alerting-resources/file-provisioning/>.
+- Microsoft, codificación de Windows PowerShell: <https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_character_encoding?view=powershell-5.1>.
