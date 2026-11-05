@@ -84,6 +84,13 @@ function Test-ProjectConfiguration {
             '-config.file=/etc/promtail/promtail.yml', '-check-syntax'
         )
     }
+    if ($services -contains 'grafana') {
+        Write-Host 'Validando JSON y referencias de Grafana...'
+        Invoke-DockerCompose -Arguments @(
+            'run', '--rm', '--no-deps', '--build', '--entrypoint', 'python',
+            'webhook-receiver', '/app/validate_grafana.py', '/project-dashboards'
+        )
+    }
     Write-Host 'Validacion estatica del stack correcta.' -ForegroundColor Green
 }
 
@@ -129,6 +136,9 @@ try {
                 $scripts = @('tests/validation/test-metrics.ps1')
                 if (@(Get-ComposeServices) -contains 'loki') {
                     $scripts += 'tests/validation/test-logs.ps1'
+                }
+                if (@(Get-ComposeServices) -contains 'grafana') {
+                    $scripts += 'tests/validation/test-grafana.ps1'
                 }
                 foreach ($relativeScript in $scripts) {
                     $testScript = Join-Path $ProjectRoot $relativeScript

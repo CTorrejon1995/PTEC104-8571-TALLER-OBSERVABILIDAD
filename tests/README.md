@@ -57,3 +57,18 @@ python -m unittest discover -s tests/validation -p test_generator.py -v
 La prueba opcional `integration/test_logs_native.py` usa binarios oficiales de Loki y Promtail y Python estándar, sin Docker. Si se proporciona `--pwsh`, también ejecuta el mismo script PowerShell contra el pipeline vivo. Comprueba filtros, timestamps y continuidad después de reiniciar ambos servicios. Los paths y puertos de las configuraciones se adaptan a un directorio temporal; las etapas de procesamiento se conservan.
 
 El resultado del entorno de preparación está en `docs/evidence/pr03-native-validation.json`. La ejecución posterior aprobada en Docker Desktop para Windows se registra en `docs/evidence/pr03-windows-validation.md`, con sus capturas.
+
+## PR #4 — Grafana y Webhook
+
+En Windows, con Docker Desktop y el stack iniciado:
+
+```powershell
+.\dev.ps1 validate
+.\dev.ps1 test -Integration
+```
+
+La integración ejecuta métricas, logs y `validation/test-grafana.ps1`. Esta última verifica las dos fuentes, el dashboard, las consultas y el envío real de una alerta. Cambia temporalmente solo Grafana a umbral -1 % / 0s y restaura 80 % / 1m en `finally`. El receptor no recibe un POST artificial para aprobar la prueba. El resultado queda en `docs/evidence/pr04-windows-validation.json`.
+
+Los mantenedores pueden ejecutar `python -m unittest discover -s tests/validation -p 'test_*.py' -v` para comprobar generador y receptor. No es necesario instalar Python en Windows para el flujo normal.
+
+`integration/test_grafana_native.py --help` documenta las rutas de binarios requeridas por la prueba Linux sin Docker. Arranca Grafana, Prometheus, Node Exporter, Loki, Promtail, generador y receptor reales, ejecuta el mismo script PowerShell con recarga de provisioning y comprueba un reinicio de Grafana. Omite SNMP y utiliza un montaje Linux real; el informe lo declara. No reemplaza la validación Docker Desktop de Windows.
