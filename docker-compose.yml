@@ -71,6 +71,66 @@ services:
       - observability-internal
     restart: unless-stopped
 
+  loki:
+    image: grafana/loki:3.6.19
+    container_name: ${COMPOSE_PROJECT_NAME:-observability-stack}-loki
+    command:
+      - -config.file=/etc/loki/loki.yml
+    ports:
+      - "127.0.0.1:3100:3100"
+    volumes:
+      - ./configs/loki/loki.yml:/etc/loki/loki.yml:ro
+      - loki-data:/loki
+    networks:
+      - observability
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+
+  cloud-logs:
+    build:
+      context: ./simulators/cloud-logs
+      dockerfile: Dockerfile
+    image: observability-cloud-logs:1.0.0
+    container_name: ${COMPOSE_PROJECT_NAME:-observability-stack}-cloud-logs
+    environment:
+      CLOUD_LOG_FILE: /var/log/cloud/events.jsonl
+      CLOUD_LOG_INTERVAL_SECONDS: "2"
+      CLOUD_LOG_MAX_BYTES: "5242880"
+      CLOUD_LOG_BACKUP_COUNT: "3"
+    volumes:
+      - cloud-logs-data:/var/log/cloud
+    network_mode: none
+    restart: unless-stopped
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+
+  promtail:
+    image: grafana/promtail:3.6.11
+    container_name: ${COMPOSE_PROJECT_NAME:-observability-stack}-promtail
+    command:
+      - -config.file=/etc/promtail/promtail.yml
+    ports:
+      - "127.0.0.1:9080:9080"
+    volumes:
+      - ./configs/promtail/promtail.yml:/etc/promtail/promtail.yml:ro
+      - cloud-logs-data:/var/log/cloud:ro
+      - promtail-positions:/positions
+    depends_on:
+      - loki
+      - cloud-logs
+    networks:
+      - observability
+    restart: unless-stopped
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+
 networks:
   observability:
     name: ${COMPOSE_PROJECT_NAME:-observability-stack}-network
@@ -89,3 +149,7 @@ volumes:
     name: ${COMPOSE_PROJECT_NAME:-observability-stack}-grafana-data
   jaeger-data:
     name: ${COMPOSE_PROJECT_NAME:-observability-stack}-jaeger-data
+  cloud-logs-data:
+    name: ${COMPOSE_PROJECT_NAME:-observability-stack}-cloud-logs-data
+  promtail-positions:
+    name: ${COMPOSE_PROJECT_NAME:-observability-stack}-promtail-positions

@@ -20,6 +20,39 @@ El stack se organiza en cuatro capas:
 
 El desarrollo se implementa incrementalmente en seis Pull Requests. PR #1 establece la fundación del repositorio. PR #2 incorpora la recolección de métricas; los PR posteriores añadirán logs, visualización, alertas y trazas.
 
+Esta versión incorpora el PR #3: centralización de logs. Grafana y alertas (PR #4), trazas (PR #5) y cierre integral (PR #6) siguen pendientes.
+
+## PR #3 — Logs JSON, Promtail y Loki
+
+| Servicio nuevo | Versión | Función |
+|---|---|---|
+| Loki | grafana/loki:3.6.19 | Recibir, almacenar y consultar logs |
+| Promtail | grafana/promtail:3.6.11 | Leer JSON, extraer timestamp y etiquetar level |
+| cloud-logs | observability-cloud-logs:1.0.0 | Generar eventos sintéticos info, warn y error |
+
+El generador usa Python 3.12.12 y no necesita una cuenta cloud ni Python instalado en Windows. Es una simulación explícita del origen de los logs; Promtail, Loki y las consultas funcionan realmente.
+
+Guía completa: [docs/PR03_LOGS.md](docs/PR03_LOGS.md).
+
+~~~powershell
+.\dev.ps1 validate
+.\dev.ps1 up -Build
+.\dev.ps1 status
+.\dev.ps1 test -Integration
+~~~
+
+La validación incluye Prometheus, Loki y Promtail. La integración comprueba métricas y logs. Para los logs escribe un registro nuevo con identificador único mediante el generador y espera encontrarlo en Loki con level=error.
+
+Endpoints nuevos:
+
+- Loki: http://localhost:3100/ready
+- Promtail: http://localhost:9080/ready
+- Targets de Promtail: http://localhost:9080/targets
+
+Las consultas del PR #3 se prueban contra la API de Loki. La vista de logs en Grafana corresponde al PR #4.
+
+Promtail está fuera de soporte según Grafana. Se conserva por ser un componente exigido expresamente en la consigna del laboratorio; la migración futura a Alloy queda fuera de este PR.
+
 ## Estado de implementación
 
 ### PR #2 — Infrastructure & Metrics
@@ -112,7 +145,7 @@ Los contadores SNMP se expresan en octetos. `rate()` calcula octetos por segundo
 .\dev.ps1 test -Integration
 ```
 
-La prueba de integración requiere que el stack esté iniciado. Comprueba la disponibilidad de Prometheus, el estado `UP` de los tres jobs y la presencia de las métricas de CPU y contadores de red.
+La integración requiere que el stack esté iniciado. Comprueba Prometheus, los tres jobs de métricas y los contadores de CPU/red; después prueba la ingesta y las etiquetas de los logs. Ver [tests/README.md](tests/README.md).
 
 Para inspeccionar directamente el endpoint del SNMP Exporter:
 
@@ -170,7 +203,7 @@ El comando `migrate` no se implementa mientras no exista una migración real que
 
 ## Redes y persistencia
 
-Compose conserva las redes `observability` y `observability-internal`. Prometheus y los exporters se conectan a la red de observabilidad; el agente SNMP solo pertenece a la red interna, a la que también se conecta SNMP Exporter. Los datos de Prometheus se almacenan en el volumen nombrado `prometheus-data`. Los volúmenes reservados para Loki, Grafana y Jaeger se mantienen para los PR posteriores.
+El PR #3 conserva las redes y servicios de métricas. Añade Loki y Promtail a `observability`. El generador trabaja sin red y comparte un volumen de archivos con Promtail, que lo monta en lectura. Loki utiliza `loki-data`; los archivos usan `cloud-logs-data` y los offsets de lectura usan `promtail-positions`. Grafana y Jaeger todavía no están desplegados.
 
 ` .\dev.ps1 down` no elimina volúmenes. ` .\dev.ps1 clean` es destructivo y requiere confirmación.
 

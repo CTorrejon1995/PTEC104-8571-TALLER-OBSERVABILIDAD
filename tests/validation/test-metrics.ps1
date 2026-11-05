@@ -1,4 +1,4 @@
-[CmdletBinding()]
+﻿[CmdletBinding()]
 param()
 
 Set-StrictMode -Version Latest
@@ -46,7 +46,19 @@ function Assert-MetricPresent {
 }
 
 try {
-    $null = Invoke-RestMethod -Uri "$PrometheusBaseUrl/-/ready" -TimeoutSec 5
+    $ready = $false
+    $readyDeadline = [DateTime]::UtcNow.AddSeconds(60)
+    while ([DateTime]::UtcNow -lt $readyDeadline) {
+        try {
+            $null = Invoke-RestMethod -Uri "$PrometheusBaseUrl/-/ready" -TimeoutSec 3
+            $ready = $true
+            break
+        }
+        catch {
+            Start-Sleep -Milliseconds 500
+        }
+    }
+    if (-not $ready) { throw 'Prometheus no alcanzo estado READY en 60 segundos.' }
     Write-Host 'Prometheus: READY' -ForegroundColor Green
 
     Assert-TargetUp -JobName 'prometheus'

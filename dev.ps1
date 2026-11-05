@@ -1,4 +1,4 @@
-[CmdletBinding()]
+﻿[CmdletBinding()]
 param(
     [Parameter(Position = 0)]
     [ValidateSet('up', 'down', 'restart', 'status', 'logs', 'validate', 'test', 'clean')]
@@ -69,7 +69,22 @@ function Test-ProjectConfiguration {
         'check', 'config', '/etc/prometheus/prometheus.yml'
     )
 
-    Write-Host 'Validación estática de PR #2 correcta.' -ForegroundColor Green
+    $services = @(Get-ComposeServices)
+    if ($services -contains 'loki') {
+        Write-Host 'Validando configuracion de Loki...'
+        Invoke-DockerCompose -Arguments @(
+            'run', '--rm', '--no-deps', 'loki',
+            '-config.file=/etc/loki/loki.yml', '-verify-config=true'
+        )
+    }
+    if ($services -contains 'promtail') {
+        Write-Host 'Validando configuracion de Promtail...'
+        Invoke-DockerCompose -Arguments @(
+            'run', '--rm', '--no-deps', 'promtail',
+            '-config.file=/etc/promtail/promtail.yml', '-check-syntax'
+        )
+    }
+    Write-Host 'Validacion estatica del stack correcta.' -ForegroundColor Green
 }
 
 try {
@@ -111,19 +126,26 @@ try {
         'test' {
             Test-ProjectConfiguration
             if ($Integration) {
-                $testScript = Join-Path $ProjectRoot 'tests/validation/test-metrics.ps1'
-                if (-not (Test-Path $testScript)) {
-                    throw "No se encontró el script de integración: $testScript"
+                $scripts = @('tests/validation/test-metrics.ps1')
+                if (@(Get-ComposeServices) -contains 'loki') {
+                    $scripts += 'tests/validation/test-logs.ps1'
                 }
-                try {
-                    & $testScript
+                foreach ($relativeScript in $scripts) {
+                    $testScript = Join-Path $ProjectRoot $relativeScript
+                    if (-not (Test-Path $testScript)) {
+                        throw "No se encontro el script de integracion: $testScript"
+                    }
+                    try {
+                        & $testScript
+                    }
+                    catch {
+                        throw ('Fallo en ' + $relativeScript + ': ' + $_.Exception.Message)
+                    }
                 }
-                catch {
-                    throw "Las pruebas de integración fallaron: $($_.Exception.Message)"
-                }
+                Write-Host 'Pruebas de integracion del stack aprobadas.' -ForegroundColor Green
             }
             else {
-                Write-Host 'Pruebas estáticas de PR #2 aprobadas.' -ForegroundColor Green
+                Write-Host 'Pruebas estaticas del stack aprobadas.' -ForegroundColor Green
                 Write-Host 'Para comprobar los servicios desplegados, ejecuta: .\dev.ps1 test -Integration'
             }
         }

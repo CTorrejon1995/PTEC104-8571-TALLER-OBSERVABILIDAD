@@ -7,7 +7,13 @@ Contener fuentes de datos simuladas necesarias para reproducir escenarios de inf
 - `snmp-agent/`: agente Net-SNMP que representa un dispositivo de red de laboratorio.
 - `cloud-logs/`: generador de registros JSON que representa eventos de infraestructura (PR #3).
 
-## Simulador SNMP (PR #2)
+## Generador cloud-logs (PR #3)
+
+`cloud-logs/generate_logs.py` genera JSON con timestamp UTC, level, service, message, request_id, sequence y simulated=true. Alterna info, warn y error cada dos segundos. El archivo activo rota a partir de 5 MiB con tres copias de respaldo; Promtail sigue el archivo activo. El generador no realiza conexiones a una nube real ni requiere credenciales.
+
+El contenedor usa UID 10001, filesystem de solo lectura y un volumen escribible para los logs. Promtail monta ese volumen en lectura. La prueba de integración usa `--once` para insertar un registro nuevo con un identificador único y verificar todo el recorrido.
+
+## Detalles del simulador SNMP (PR #2)
 
 `snmp-agent/` contiene:
 
