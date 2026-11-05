@@ -35,3 +35,25 @@ El script `validation/test-metrics.ps1` comprueba que Prometheus esté listo, qu
 La prueba no genera carga de red artificial; solo verifica que los contadores SNMP estén disponibles. La demostración de tráfico requiere producir solicitudes sobre la red del simulador y observar el incremento de los contadores.
 
 La validación integral del stack corresponde al PR #6.
+
+## PR #3 — Integración de logs
+
+`dev.ps1 validate` añade los validadores nativos de Loki y Promtail. `dev.ps1 test -Integration` ejecuta primero métricas y después `validation/test-logs.ps1`.
+
+La prueba de logs espera los endpoints ready, escribe un probe nuevo en el generador mediante Docker Compose, lo busca en Loki con level=error, comprueba el JSON almacenado y verifica las tres severidades. Falla si el registro no llega; tener contenedores en estado Up no alcanza.
+
+Para ejecutar solo logs:
+
+~~~powershell
+.\tests\validation\test-logs.ps1
+~~~
+
+Pruebas de contrato del generador, para un entorno con Python:
+
+~~~text
+python -m unittest discover -s tests/validation -p test_generator.py -v
+~~~
+
+La prueba opcional `integration/test_logs_native.py` usa binarios oficiales de Loki y Promtail y Python estándar, sin Docker. Si se proporciona `--pwsh`, también ejecuta el mismo script PowerShell contra el pipeline vivo. Comprueba filtros, timestamps y continuidad después de reiniciar ambos servicios. Los paths y puertos de las configuraciones se adaptan a un directorio temporal; las etapas de procesamiento se conservan.
+
+El resultado del entorno de preparación está en `docs/evidence/pr03-native-validation.json`. La ejecución posterior aprobada en Docker Desktop para Windows se registra en `docs/evidence/pr03-windows-validation.md`, con sus capturas.

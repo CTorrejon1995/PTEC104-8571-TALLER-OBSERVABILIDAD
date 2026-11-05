@@ -22,6 +22,4 @@ venv/
 .vscode/
 .idea/
 
-# Evidencias generadas localmente (mantener la carpeta mediante .gitkeep)
-docs/evidence/*
-!docs/evidence/.gitkeep
+# Las capturas reales de docs/evidence/ se versionan con el informe.

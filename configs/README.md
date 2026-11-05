@@ -10,7 +10,9 @@ Centralizar los archivos de configuración de los componentes de observabilidad.
 - `promtail/`: scraping y pipeline de procesamiento JSON (PR #3).
 - `otel-collector/`: recepción y exportación de telemetría (PR #5).
 
-## Configuraciones implementadas en PR #2
+## Configuraciones implementadas
+
+PR #3 añade `loki/loki.yml` (TSDB v13, filesystem, WAL y retención de siete días) y `promtail/promtail.yml` (lectura JSON, timestamp RFC3339 y etiqueta level). Las carpetas de OTEL siguen reservadas para PR #5.
 
 - `prometheus/prometheus.yml`: define los jobs `prometheus`, `node-exporter` y `snmp-device`.
 - `snmp-exporter/snmp.yml`: perfil reducido IF-MIB para consultar contadores de octetos de 64 bits, nombre y estado operacional de interfaces. Utiliza el perfil `public_v2` de SNMPv2c.
@@ -27,7 +29,7 @@ Desde la raíz del repositorio:
 .\dev.ps1 validate
 ```
 
-El script ejecuta `docker compose config --quiet` y `promtool check config` dentro de la imagen fijada de Prometheus.
+El script valida Compose y ejecuta los validadores nativos de Prometheus, Loki y Promtail dentro de sus imágenes fijadas.
 
 ## Referencias
 
