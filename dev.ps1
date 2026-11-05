@@ -39,7 +39,7 @@ function Get-ComposeServices {
     try {
         $result = & docker compose --project-directory $ProjectRoot -f $ComposeFile config --services
         if ($LASTEXITCODE -ne 0) {
-            throw "No fue posible obtener los servicios definidos en Compose."
+            throw 'No fue posible obtener los servicios definidos en Compose.'
         }
         return @($result | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
     }
@@ -50,13 +50,26 @@ function Get-ComposeServices {
 
 function Assert-DockerCompose {
     if (-not (Get-Command docker -ErrorAction SilentlyContinue)) {
-        throw 'No se encontró Docker CLI. Instala Docker Desktop y habilita Docker Compose v2.'
+        throw 'No se encontró Docker CLI. Instala Docker Desktop y habilita Docker Compose.'
     }
 
     & docker compose version
     if ($LASTEXITCODE -ne 0) {
-        throw 'Docker Compose v2 no está disponible.'
+        throw 'Docker Compose no está disponible.'
     }
+}
+
+function Test-ProjectConfiguration {
+    Write-Host 'Validando sintaxis y modelo de Docker Compose...'
+    Invoke-DockerCompose -Arguments @('config', '--quiet')
+
+    Write-Host 'Validando configuración de Prometheus mediante promtool...'
+    Invoke-DockerCompose -Arguments @(
+        'run', '--rm', '--no-deps', '--entrypoint', '/bin/promtool', 'prometheus',
+        'check', 'config', '/etc/prometheus/prometheus.yml'
+    )
+
+    Write-Host 'Validación estática de PR #2 correcta.' -ForegroundColor Green
 }
 
 try {
@@ -64,36 +77,21 @@ try {
 
     switch ($Command) {
         'validate' {
-            Write-Host 'Validando sintaxis y modelo de Docker Compose...'
-            Invoke-DockerCompose -Arguments @('config', '--quiet')
-            Write-Host 'Validación de Docker Compose correcta.'
+            Test-ProjectConfiguration
         }
 
         'up' {
             Invoke-DockerCompose -Arguments @('config', '--quiet')
-            $services = Get-ComposeServices
-            if ($services.Count -eq 0) {
-                Write-Host 'La fundación del PR #1 no define contenedores todavía.'
-                Write-Host 'Las redes y los volúmenes se utilizarán al incorporar servicios en los siguientes PR.'
-                break
-            }
-
             $composeArgs = @('up', '-d')
             if ($Build) { $composeArgs += '--build' }
             Invoke-DockerCompose -Arguments $composeArgs
         }
 
         'down' {
-            # No elimina volúmenes: preserva la persistencia del entorno.
             Invoke-DockerCompose -Arguments @('down', '--remove-orphans')
         }
 
         'restart' {
-            $services = Get-ComposeServices
-            if ($services.Count -eq 0) {
-                Write-Host 'No hay servicios definidos para reiniciar.'
-                break
-            }
             Invoke-DockerCompose -Arguments @('restart')
         }
 
@@ -111,11 +109,23 @@ try {
         }
 
         'test' {
+            Test-ProjectConfiguration
             if ($Integration) {
-                throw 'Las pruebas de integración se incorporarán cuando existan servicios. En PR #1 solo corresponde la validación estática.'
+                $testScript = Join-Path $ProjectRoot 'tests/validation/test-metrics.ps1'
+                if (-not (Test-Path $testScript)) {
+                    throw "No se encontró el script de integración: $testScript"
+                }
+                try {
+                    & $testScript
+                }
+                catch {
+                    throw "Las pruebas de integración fallaron: $($_.Exception.Message)"
+                }
             }
-            Invoke-DockerCompose -Arguments @('config', '--quiet')
-            Write-Host 'Prueba estática de PR #1 aprobada: Docker Compose es válido.'
+            else {
+                Write-Host 'Pruebas estáticas de PR #2 aprobadas.' -ForegroundColor Green
+                Write-Host 'Para comprobar los servicios desplegados, ejecuta: .\dev.ps1 test -Integration'
+            }
         }
 
         'clean' {

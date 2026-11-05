@@ -4,25 +4,32 @@
 Centralizar los archivos de configuración de los componentes de observabilidad.
 
 ## Responsabilidades
-- `prometheus/`: configuración de scraping y reglas.
-- `snmp-exporter/`: módulos de consulta SNMP.
-- `loki/`: configuración de almacenamiento y recepción de logs.
-- `promtail/`: scraping y pipeline de procesamiento JSON.
-- `otel-collector/`: recepción y exportación de telemetría.
+- `prometheus/`: configuración de scraping y reglas de métricas.
+- `snmp-exporter/`: autenticación y módulos SNMP expuestos a Prometheus.
+- `loki/`: configuración de almacenamiento y recepción de logs (PR #3).
+- `promtail/`: scraping y pipeline de procesamiento JSON (PR #3).
+- `otel-collector/`: recepción y exportación de telemetría (PR #5).
 
-## Estructura
-```text
-configs/
-├── prometheus/
-│   └── rules/
-├── snmp-exporter/
-├── loki/
-├── promtail/
-└── otel-collector/
-```
+## Configuraciones implementadas en PR #2
+
+- `prometheus/prometheus.yml`: define los jobs `prometheus`, `node-exporter` y `snmp-device`.
+- `snmp-exporter/snmp.yml`: perfil reducido IF-MIB para consultar contadores de octetos de 64 bits, nombre y estado operacional de interfaces. Utiliza el perfil `public_v2` de SNMPv2c.
+
+El módulo `if_mib` incluido aquí es una configuración mínima propia del laboratorio; no es una copia íntegra del `snmp.yml` distribuido por el proyecto SNMP Exporter. El nombre del módulo y el perfil de autenticación siguen el patrón recomendado por su documentación oficial.
 
 ## Dependencias
-Cada configuración dependerá de la versión fijada del servicio correspondiente. Las versiones y compatibilidades se verificarán antes de incorporarlas en los PR funcionales.
+Las versiones de las imágenes se fijan en `docker-compose.yml`: Prometheus `v3.14.0` y SNMP Exporter `v0.31.0` para este PR.
 
-## Ejecución y validación
-Las validaciones específicas se documentarán al incorporar cada archivo. No hay configuraciones funcionales de estos componentes en PR #1.
+## Validación
+Desde la raíz del repositorio:
+
+```powershell
+.\dev.ps1 validate
+```
+
+El script ejecuta `docker compose config --quiet` y `promtool check config` dentro de la imagen fijada de Prometheus.
+
+## Referencias
+
+- Prometheus Authors. (s. f.). *Configuration*. https://prometheus.io/docs/prometheus/latest/configuration/configuration/
+- Prometheus Authors. (s. f.). *SNMP exporter*. https://github.com/prometheus/snmp_exporter

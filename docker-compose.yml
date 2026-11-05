@@ -1,8 +1,75 @@
 name: ${COMPOSE_PROJECT_NAME:-observability-stack}
 
-# PR #1: fundación del proyecto.
-# Los servicios se incorporarán en los PR funcionales correspondientes.
-services: {}
+services:
+  prometheus:
+    image: prom/prometheus:v3.14.0
+    container_name: ${COMPOSE_PROJECT_NAME:-observability-stack}-prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=15d
+      - --web.enable-lifecycle
+    ports:
+      - "127.0.0.1:9090:9090"
+    volumes:
+      - ./configs/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    depends_on:
+      - node-exporter
+      - snmp-exporter
+      - snmp-agent
+    networks:
+      - observability
+    restart: unless-stopped
+
+  node-exporter:
+    image: prom/node-exporter:v1.12.1
+    container_name: ${COMPOSE_PROJECT_NAME:-observability-stack}-node-exporter
+    command:
+      - --path.procfs=/host/proc
+      - --path.sysfs=/host/sys
+      - --path.rootfs=/host
+      - --collector.filesystem.mount-points-exclude=^/(dev|proc|sys|var/lib/docker/.+|var/lib/containerd/.+|run/.+)$
+    ports:
+      - "127.0.0.1:9100:9100"
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/host:ro
+    networks:
+      - observability
+    restart: unless-stopped
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+
+  snmp-exporter:
+    image: prom/snmp-exporter:v0.31.0
+    container_name: ${COMPOSE_PROJECT_NAME:-observability-stack}-snmp-exporter
+    command:
+      - --config.file=/etc/snmp_exporter/snmp.yml
+    ports:
+      - "127.0.0.1:9116:9116"
+    volumes:
+      - ./configs/snmp-exporter/snmp.yml:/etc/snmp_exporter/snmp.yml:ro
+    networks:
+      - observability
+      - observability-internal
+    restart: unless-stopped
+
+  snmp-agent:
+    build:
+      context: ./simulators/snmp-agent
+      dockerfile: Dockerfile
+    image: observability-snmp-agent:1.0.0
+    container_name: ${COMPOSE_PROJECT_NAME:-observability-stack}-snmp-agent
+    expose:
+      - "161/udp"
+    networks:
+      - observability-internal
+    restart: unless-stopped
 
 networks:
   observability:
