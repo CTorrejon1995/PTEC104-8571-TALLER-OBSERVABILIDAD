@@ -18,9 +18,24 @@ El stack se organiza en cuatro capas:
 3. **Almacenamiento y consulta:** Prometheus, Loki y Jaeger.
 4. **Visualización y operación:** Grafana, dashboards y notificaciones Webhook.
 
-El desarrollo se implementa incrementalmente en seis Pull Requests. PR #1 establece la fundación del repositorio. PR #2 incorpora la recolección de métricas; los PR posteriores añadirán logs, visualización, alertas y trazas.
+El desarrollo se organizó por etapas: fundación del repositorio, métricas, logs, Grafana/alertas y trazas. El cierre documental reúne sus resultados y evidencias en [docs/INFORME.md](docs/INFORME.md). Los números automáticos de los Pull Requests de GitHub pueden diferir de los nombres de etapa.
 
-Esta versión incorpora métricas (PR #2), logs (PR #3) y Grafana con alertas Webhook (PR #4). Trazas (PR #5) y cierre integral (PR #6) siguen pendientes.
+Esta versión integra métricas, logs, Grafana/alertas y trazas distribuidas. La integración completa se aprobó en Windows con Docker Desktop; Jaeger muestra una transacción real entre los dos microservicios. Las capturas originales y el alcance de las pruebas se documentan en [docs/PR05_VALIDACION.md](docs/PR05_VALIDACION.md).
+
+## PR #5 — OpenTelemetry, Jaeger y microservicios
+
+Se añaden Collector Contrib 0.164.0, Jaeger 2.23.0 y dos procesos HTTP con OpenTelemetry Python 1.45.2. El total configurado es de trece servicios. La app publica http://localhost:8082 y Jaeger http://localhost:16686.
+
+La prueba genera escenarios de 40/600 ms, exige una traza nueva con ambos servicios y referencias padre-hijo correctas y guarda un análisis de latencia. Las demoras son simuladas; HTTP y los SDK son reales.
+
+Guía: [docs/PR05_TRAZAS.md](docs/PR05_TRAZAS.md). Resultados de preparación y Windows: [docs/PR05_VALIDACION.md](docs/PR05_VALIDACION.md). La captura de Jaeger muestra dos servicios y seis spans; la operación simulada de service-b ocupa unos 600 ms de una transacción de 627 ms.
+
+~~~powershell
+.\dev.ps1 validate
+.\dev.ps1 up -Build
+.\dev.ps1 status
+.\dev.ps1 test -Integration
+~~~
 
 ## PR #4 — Grafana y alerta Webhook
 
@@ -39,7 +54,7 @@ Grafana 12.4.14 carga automáticamente Prometheus, Loki, un Dashboard Operativo 
 .\dev.ps1 test -Integration
 ~~~
 
-La integración comprueba métricas, logs y Grafana. Para el Webhook utiliza CPU real con umbral temporal -1 %, espera un aviso enviado por Grafana y restaura 80 % / 1 minuto. Genera un informe con el resultado real. Deben quedar nueve servicios Up. En el dashboard seleccionar el montaje `/mnt/docker-desktop-disk` de Docker Desktop.
+La integración comprueba métricas, logs y Grafana. Para el Webhook utiliza CPU real con umbral temporal -1 %, espera un aviso enviado por Grafana y restaura 80 % / 1 minuto. Genera un informe con el resultado real. El bloque hasta PR #4 contiene nueve servicios; con el PR #5 el total configurado es trece. En el dashboard seleccionar el montaje `/mnt/docker-desktop-disk` de Docker Desktop.
 
 ## PR #3 — Logs JSON, Promtail y Loki
 
@@ -164,7 +179,7 @@ Los contadores SNMP se expresan en octetos. `rate()` calcula octetos por segundo
 .\dev.ps1 test -Integration
 ```
 
-La integración requiere que el stack esté iniciado. Comprueba los jobs de métricas, los contadores CPU/red, la ingesta de logs y Grafana, incluido el envío real de la alerta de prueba y la restauración de su regla. Ver [tests/README.md](tests/README.md).
+La integración requiere que el stack esté iniciado. Comprueba los jobs de métricas, los contadores CPU/red, la ingesta de logs y Grafana, incluido el envío real de la alerta de prueba y la restauración de su regla. Después exige trazas nuevas de ambos microservicios recuperadas de Jaeger y analiza su latencia. Ver [tests/README.md](tests/README.md).
 
 Para inspeccionar directamente el endpoint del SNMP Exporter:
 
@@ -185,9 +200,9 @@ La consulta de ancho de banda necesita al menos dos muestras del contador separa
 | `.\dev.ps1 status` | Muestra el estado |
 | `.\dev.ps1 logs` | Sigue los logs |
 | `.\dev.ps1 logs -Service prometheus` | Sigue los logs de Prometheus |
-| `.\dev.ps1 validate` | Valida Compose, Prometheus, Loki, Promtail y archivos Grafana |
+| `.\dev.ps1 validate` | Valida Compose, Prometheus, Loki, Promtail, Grafana, Jaeger, Collector y sintaxis de los microservicios |
 | `.\dev.ps1 test` | Ejecuta pruebas estáticas |
-| `.\dev.ps1 test -Integration` | Comprueba métricas, logs, Grafana y alerta Webhook |
+| `.\dev.ps1 test -Integration` | Comprueba métricas, logs, Grafana/Webhook y trazas distribuidas |
 | `.\dev.ps1 clean` | Elimina contenedores, redes y volúmenes tras confirmación |
 
 El comando `migrate` no se implementa mientras no exista una migración real que administrar.
@@ -222,7 +237,7 @@ El comando `migrate` no se implementa mientras no exista una migración real que
 
 ## Redes y persistencia
 
-El PR #3 conserva las redes y servicios de métricas. Añade Loki y Promtail a `observability`. El generador trabaja sin red y comparte un volumen de archivos con Promtail, que lo monta en lectura. Loki utiliza `loki-data`; los archivos usan `cloud-logs-data` y los offsets de lectura usan `promtail-positions`. El PR #4 utiliza `grafana-data` para Grafana y añade `webhook-data` para los avisos SQLite. Jaeger sigue pendiente para el PR #5.
+El PR #3 conserva las redes y servicios de métricas. Añade Loki y Promtail a `observability`. El generador trabaja sin red y comparte un volumen de archivos con Promtail, que lo monta en lectura. Loki utiliza `loki-data`; los archivos usan `cloud-logs-data` y los offsets de lectura usan `promtail-positions`. El PR #4 utiliza `grafana-data` para Grafana y añade `webhook-data` para los avisos SQLite. El PR #5 configura Jaeger con almacenamiento en memoria; sus trazas se exportan a JSON durante la prueba. El volumen jaeger-data reservado no se monta en esa modalidad.
 
 ` .\dev.ps1 down` no elimina volúmenes. ` .\dev.ps1 clean` es destructivo y requiere confirmación.
 

@@ -1,23 +1,14 @@
-# Aplicación
+# Aplicación de prueba — PR #5
 
-## Propósito
-Contener los microservicios de prueba que generarán trazas distribuidas en la fase de APM.
+Dos procesos HTTP reales con OpenTelemetry Python 1.45.2:
 
-## Responsabilidades
-- `service-a`: punto de entrada de solicitudes.
-- `service-b`: operación interna invocada por `service-a`.
-- `shared`: código compartido estrictamente necesario.
+- service-a/main.py: GET /checkout, validación, llamada HTTP al worker y respuesta con trace_id.
+- service-b/main.py: GET /work, span servidor y operación simulated-db-query.
+- shared/telemetry.py: SDK, recursos service.name, batching, exportador OTLP/HTTP y contexto W3C.
+- requirements.txt: dependencias directas y transitivas fijadas a las usadas en preparación.
 
-## Estructura
-```text
-app/
-├── service-a/
-├── service-b/
-└── shared/
-```
+La demora de la operación es deliberada: 40 ms en fast y 600 ms en slow. Está etiquetada como simulación; no se crea una base de datos ficticia. HTTP y los spans exportados son reales.
 
-## Dependencias
-La instrumentación OpenTelemetry y las dependencias de ejecución se definirán en PR #5. No se incorporan dependencias de aplicación en PR #1.
+Docker usa Python 3.12.12, usuario 10001, raíz de contenedor de lectura y biblioteca estándar para servir HTTP. service-a se publica en http://localhost:8082; service-b solo se alcanza dentro de la red de Compose. /health de service-a comprueba también al worker.
 
-## Ejecución y validación
-Se incorporarán instrucciones reproducibles junto con el código de los servicios en PR #5. En esta fase solo se establece la estructura.
+Procedimiento, trazas y evidencias: [PR05_TRAZAS.md](../docs/PR05_TRAZAS.md). No se requiere Python en Windows para ejecutar el flujo Docker.

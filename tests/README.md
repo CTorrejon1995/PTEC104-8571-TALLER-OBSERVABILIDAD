@@ -34,7 +34,7 @@ El script `validation/test-metrics.ps1` comprueba que Prometheus esté listo, qu
 
 La prueba no genera carga de red artificial; solo verifica que los contadores SNMP estén disponibles. La demostración de tráfico requiere producir solicitudes sobre la red del simulador y observar el incremento de los contadores.
 
-La validación integral del stack corresponde al PR #6.
+La integración completa actual comprende métricas, logs, Grafana/Webhook y trazas. Su ejecución aprobada de Windows y la evidencia de Jaeger están documentadas en [PR05_VALIDACION.md](../docs/PR05_VALIDACION.md).
 
 ## PR #3 — Integración de logs
 
@@ -72,3 +72,13 @@ La integración ejecuta métricas, logs y `validation/test-grafana.ps1`. Esta ú
 Los mantenedores pueden ejecutar `python -m unittest discover -s tests/validation -p 'test_*.py' -v` para comprobar generador y receptor. No es necesario instalar Python en Windows para el flujo normal.
 
 `integration/test_grafana_native.py --help` documenta las rutas de binarios requeridas por la prueba Linux sin Docker. Arranca Grafana, Prometheus, Node Exporter, Loki, Promtail, generador y receptor reales, ejecuta el mismo script PowerShell con recarga de provisioning y comprueba un reinicio de Grafana. Omite SNMP y utiliza un montaje Linux real; el informe lo declara. No reemplaza la validación Docker Desktop de Windows.
+
+## PR #5 — Trazas distribuidas
+
+Con Docker iniciado, dev.ps1 test -Integration añade validation/test-traces.ps1 después de métricas, logs y Grafana. Puede ejecutarse también de forma independiente. Genera solicitudes fast/slow nuevas, consulta Jaeger, verifica el contexto y referencias entre servicios y guarda JSON y análisis.
+
+integration/test_traces_native.py es el equivalente completo para un Linux con PID visible en /proc y los binarios fijados. En el ejecutor de preparación el backend no pudo arrancar por esa visibilidad; el resultado no se presenta como aprobado.
+
+integration/test_sdk_otlp_native.py comprueba por separado los dos procesos HTTP y el protobuf OTLP real emitido por sus SDK. Su endpoint de captura no representa a Jaeger ni Collector. Las pruebas de entrada en validation/test_demo_app.py y las existentes se ejecutaron con nueve resultados aprobados. Usar el Python del entorno virtual con app/requirements.txt para esos tests de mantenimiento; no es necesario instalarlo en Windows para el flujo Docker.
+
+El chequeo de disponibilidad usa /api/v3/services, compatible con Jaeger 2.23. La integración completa posterior a esta corrección aprobó en Docker Desktop; la captura de Jaeger muestra dos servicios y seis spans. La limitación del runner nativo en el ejecutor de preparación se conserva como resultado histórico distinto.

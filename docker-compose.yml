@@ -182,6 +182,88 @@ services:
     security_opt:
       - no-new-privileges:true
 
+  jaeger:
+    image: jaegertracing/jaeger:2.23.0
+    container_name: ${COMPOSE_PROJECT_NAME:-observability-stack}-jaeger
+    command: ["--config", "/etc/jaeger/jaeger.yml"]
+    ports:
+      - "127.0.0.1:16686:16686"
+    volumes:
+      - ./configs/jaeger/jaeger.yml:/etc/jaeger/jaeger.yml:ro
+    networks:
+      - observability
+    restart: unless-stopped
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.164.0
+    container_name: ${COMPOSE_PROJECT_NAME:-observability-stack}-otel-collector
+    command: ["--config", "/etc/otelcol/otel-collector.yml"]
+    ports:
+      - "127.0.0.1:4317:4317"
+      - "127.0.0.1:4318:4318"
+      - "127.0.0.1:13133:13133"
+    volumes:
+      - ./configs/otel-collector/otel-collector.yml:/etc/otelcol/otel-collector.yml:ro
+    depends_on:
+      - jaeger
+    networks:
+      - observability
+    restart: unless-stopped
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+
+  service-b:
+    build:
+      context: ./app
+    image: observability-demo-app:1.0.0
+    container_name: ${COMPOSE_PROJECT_NAME:-observability-stack}-service-b
+    command: ["python", "/app/service-b/main.py"]
+    environment:
+      OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: http://otel-collector:4318/v1/traces
+    expose:
+      - "8080"
+    depends_on:
+      - otel-collector
+    networks:
+      - observability
+    restart: unless-stopped
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+
+  service-a:
+    build:
+      context: ./app
+    image: observability-demo-app:1.0.0
+    container_name: ${COMPOSE_PROJECT_NAME:-observability-stack}-service-a
+    command: ["python", "/app/service-a/main.py"]
+    environment:
+      OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: http://otel-collector:4318/v1/traces
+      WORKER_URL: http://service-b:8080
+      JAEGER_PUBLIC_URL: http://localhost:16686
+    ports:
+      - "127.0.0.1:8082:8080"
+    depends_on:
+      - service-b
+    networks:
+      - observability
+    restart: unless-stopped
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+
 networks:
   observability:
     name: ${COMPOSE_PROJECT_NAME:-observability-stack}-network

@@ -91,6 +91,23 @@ function Test-ProjectConfiguration {
             'webhook-receiver', '/app/validate_grafana.py', '/project-dashboards'
         )
     }
+    if ($services -contains 'otel-collector') {
+        Write-Host 'Validando configuracion de OpenTelemetry Collector...'
+        Invoke-DockerCompose -Arguments @(
+            'run', '--rm', '--no-deps', 'otel-collector',
+            'validate', '--config', '/etc/otelcol/otel-collector.yml'
+        )
+        Write-Host 'Validando configuracion de Jaeger...'
+        Invoke-DockerCompose -Arguments @(
+            'run', '--rm', '--no-deps', 'jaeger',
+            'validate', '--config', '/etc/jaeger/jaeger.yml'
+        )
+        Write-Host 'Validando sintaxis de los microservicios...'
+        Invoke-DockerCompose -Arguments @(
+            'run', '--rm', '--no-deps', '--build', '--entrypoint', 'python', 'service-a',
+            '-c', "import ast, pathlib; [ast.parse(p.read_text(encoding='utf-8')) for p in pathlib.Path('/app').rglob('*.py')]; print('Microservices syntax: OK')"
+        )
+    }
     Write-Host 'Validacion estatica del stack correcta.' -ForegroundColor Green
 }
 
@@ -139,6 +156,9 @@ try {
                 }
                 if (@(Get-ComposeServices) -contains 'grafana') {
                     $scripts += 'tests/validation/test-grafana.ps1'
+                }
+                if (@(Get-ComposeServices) -contains 'otel-collector') {
+                    $scripts += 'tests/validation/test-traces.ps1'
                 }
                 foreach ($relativeScript in $scripts) {
                     $testScript = Join-Path $ProjectRoot $relativeScript
