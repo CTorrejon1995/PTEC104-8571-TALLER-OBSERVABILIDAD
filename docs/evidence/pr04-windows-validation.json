@@ -1,9 +1,9 @@
 {
     "status":  "passed",
-    "started_at":  "2026-11-05T23:10:03.2654828Z",
+    "started_at":  "2026-11-06T14:59:52.5042394Z",
     "platform":  "Microsoft Windows NT 10.0.26300.0",
     "mode":  "docker-compose",
-    "test_run":  "pr4-784177d6acb445e7ac34db2aae24f07a",
+    "test_run":  "pr4-5915f281acd7408f9a4c307680ec0f01",
     "normal_threshold_percent":  80,
     "normal_pending_period":  "1m",
     "temporary_threshold_percent":  -1,
@@ -18,26 +18,26 @@
                ],
     "restored_normal_rule":  true,
     "cpu_percent":  [
-                        1.1360247030544945
+                        6.8997280463198312
                     ],
     "storage_mountpoint":  "/mnt/docker-desktop-disk",
     "storage_unavailable_percent":  [
-                                        5.4949157389763359
+                                        5.5653012414905279
                                     ],
     "snmp_queries_checked":  true,
-    "received_event_count":  9,
+    "received_event_count":  15,
     "received_alerts":  [
                             {
-                                "event_id":  9,
+                                "event_id":  15,
                                 "status":  "firing",
                                 "rule_uid":  "cpu-high",
                                 "alert_name":  "CPU alta · laboratorio",
-                                "test_run":  "pr4-784177d6acb445e7ac34db2aae24f07a"
+                                "test_run":  "pr4-5915f281acd7408f9a4c307680ec0f01"
                             }
                         ],
     "webhook_event":  {
-                          "id":  9,
-                          "received_at":  "2026-11-05T23:10:15.015034+00:00",
+                          "id":  15,
+                          "received_at":  "2026-11-06T15:00:05.080802+00:00",
                           "payload":  {
                                           "receiver":  "webhook-laboratorio",
                                           "status":  "firing",
@@ -51,33 +51,33 @@
                                                                             "instance":  "node-exporter:9100",
                                                                             "scope":  "docker-linux",
                                                                             "severity":  "warning",
-                                                                            "test_run":  "pr4-784177d6acb445e7ac34db2aae24f07a"
+                                                                            "test_run":  "pr4-5915f281acd7408f9a4c307680ec0f01"
                                                                         },
                                                              "annotations":  {
-                                                                                 "description":  "Promedio no ocioso de 5 minutos. CPU observada: 1.6248337620138997 %. En la prueba controlada el umbral se cambia temporalmente a -1 %.",
+                                                                                 "description":  "Promedio no ocioso de 5 minutos. CPU observada: 6.8997280463198525 %. En la prueba controlada el umbral se cambia temporalmente a -1 %.",
                                                                                  "summary":  "PR4: prueba controlada de CPU; umbral temporal -1 %, sin generar carga."
                                                                              },
-                                                             "startsAt":  "2026-11-05T23:10:10Z",
+                                                             "startsAt":  "2026-11-06T15:00:00Z",
                                                              "endsAt":  "0001-01-01T00:00:00Z",
                                                              "generatorURL":  "http://localhost:3000/alerting/grafana/cpu-high/view?orgId=1",
-                                                             "fingerprint":  "bd76c50f713f95f8",
-                                                             "silenceURL":  "http://localhost:3000/alerting/silence/new?alertmanager=grafana\u0026matcher=__alert_rule_uid__%3Dcpu-high\u0026matcher=component%3Dinfraestructura\u0026matcher=instance%3Dnode-exporter%3A9100\u0026matcher=scope%3Ddocker-linux\u0026matcher=severity%3Dwarning\u0026matcher=test_run%3Dpr4-784177d6acb445e7ac34db2aae24f07a\u0026orgId=1",
-                                                             "dashboardURL":  "http://localhost:3000/d/operativo-observabilidad?from=1793916610000\u0026orgId=1\u0026to=1793920215013",
-                                                             "panelURL":  "http://localhost:3000/d/operativo-observabilidad?from=1793916610000\u0026orgId=1\u0026to=1793920215013\u0026viewPanel=1",
+                                                             "fingerprint":  "6f15f34783f40fad",
+                                                             "silenceURL":  "http://localhost:3000/alerting/silence/new?alertmanager=grafana\u0026matcher=__alert_rule_uid__%3Dcpu-high\u0026matcher=component%3Dinfraestructura\u0026matcher=instance%3Dnode-exporter%3A9100\u0026matcher=scope%3Ddocker-linux\u0026matcher=severity%3Dwarning\u0026matcher=test_run%3Dpr4-5915f281acd7408f9a4c307680ec0f01\u0026orgId=1",
+                                                             "dashboardURL":  "http://localhost:3000/d/operativo-observabilidad?from=1793973600000\u0026orgId=1\u0026to=1793977205079",
+                                                             "panelURL":  "http://localhost:3000/d/operativo-observabilidad?from=1793973600000\u0026orgId=1\u0026to=1793977205079\u0026viewPanel=1",
                                                              "ruleUID":  "cpu-high",
                                                              "values":  {
-                                                                            "A":  1.6248337620138997,
-                                                                            "B":  1.6248337620138997,
+                                                                            "A":  6.8997280463198525,
+                                                                            "B":  6.8997280463198525,
                                                                             "C":  1
                                                                         },
-                                                             "valueString":  "[ var=\u0027A\u0027 labels={instance=node-exporter:9100} type=\u0027query\u0027 value=1.6248337620138997 ], [ var=\u0027B\u0027 labels={instance=node-exporter:9100} type=\u0027reduce\u0027 value=1.6248337620138997 ], [ var=\u0027C\u0027 labels={instance=node-exporter:9100} type=\u0027threshold\u0027 value=1 ]",
+                                                             "valueString":  "[ var=\u0027A\u0027 labels={instance=node-exporter:9100} type=\u0027query\u0027 value=6.8997280463198525 ], [ var=\u0027B\u0027 labels={instance=node-exporter:9100} type=\u0027reduce\u0027 value=6.8997280463198525 ], [ var=\u0027C\u0027 labels={instance=node-exporter:9100} type=\u0027threshold\u0027 value=1 ]",
                                                              "orgId":  1
                                                          }
                                                      ],
                                           "groupLabels":  {
                                                               "alertname":  "CPU alta · laboratorio",
                                                               "grafana_folder":  "Observabilidad",
-                                                              "test_run":  "pr4-784177d6acb445e7ac34db2aae24f07a"
+                                                              "test_run":  "pr4-5915f281acd7408f9a4c307680ec0f01"
                                                           },
                                           "commonLabels":  {
                                                                "alertname":  "CPU alta · laboratorio",
@@ -86,22 +86,22 @@
                                                                "instance":  "node-exporter:9100",
                                                                "scope":  "docker-linux",
                                                                "severity":  "warning",
-                                                               "test_run":  "pr4-784177d6acb445e7ac34db2aae24f07a"
+                                                               "test_run":  "pr4-5915f281acd7408f9a4c307680ec0f01"
                                                            },
                                           "commonAnnotations":  {
-                                                                    "description":  "Promedio no ocioso de 5 minutos. CPU observada: 1.6248337620138997 %. En la prueba controlada el umbral se cambia temporalmente a -1 %.",
+                                                                    "description":  "Promedio no ocioso de 5 minutos. CPU observada: 6.8997280463198525 %. En la prueba controlada el umbral se cambia temporalmente a -1 %.",
                                                                     "summary":  "PR4: prueba controlada de CPU; umbral temporal -1 %, sin generar carga."
                                                                 },
                                           "externalURL":  "http://localhost:3000/",
                                           "appVersion":  "12.4.14",
                                           "version":  "1",
-                                          "groupKey":  "{}:{alertname=\"CPU alta · laboratorio\", grafana_folder=\"Observabilidad\", test_run=\"pr4-784177d6acb445e7ac34db2aae24f07a\"}",
+                                          "groupKey":  "{}:{alertname=\"CPU alta · laboratorio\", grafana_folder=\"Observabilidad\", test_run=\"pr4-5915f281acd7408f9a4c307680ec0f01\"}",
                                           "truncatedAlerts":  0,
                                           "orgId":  1,
-                                          "title":  "[FIRING:1] CPU alta · laboratorio Observabilidad pr4-784177d6acb445e7ac34db2aae24f07a (infraestructura node-exporter:9100 docker-linux warning)",
+                                          "title":  "[FIRING:1] CPU alta · laboratorio Observabilidad pr4-5915f281acd7408f9a4c307680ec0f01 (infraestructura node-exporter:9100 docker-linux warning)",
                                           "state":  "alerting",
-                                          "message":  "**Firing**\n\nValue: A=1.6248337620138997, B=1.6248337620138997, C=1\nLabels:\n - alertname = CPU alta · laboratorio\n - component = infraestructura\n - grafana_folder = Observabilidad\n - instance = node-exporter:9100\n - scope = docker-linux\n - severity = warning\n - test_run = pr4-784177d6acb445e7ac34db2aae24f07a\nAnnotations:\n - description = Promedio no ocioso de 5 minutos. CPU observada: 1.6248337620138997 %. En la prueba controlada el umbral se cambia temporalmente a -1 %.\n - summary = PR4: prueba controlada de CPU; umbral temporal -1 %, sin generar carga.\nSource: http://localhost:3000/alerting/grafana/cpu-high/view?orgId=1\nSilence: http://localhost:3000/alerting/silence/new?alertmanager=grafana\u0026matcher=__alert_rule_uid__%3Dcpu-high\u0026matcher=component%3Dinfraestructura\u0026matcher=instance%3Dnode-exporter%3A9100\u0026matcher=scope%3Ddocker-linux\u0026matcher=severity%3Dwarning\u0026matcher=test_run%3Dpr4-784177d6acb445e7ac34db2aae24f07a\u0026orgId=1\nDashboard: http://localhost:3000/d/operativo-observabilidad?from=1793916610000\u0026orgId=1\u0026to=1793920215013\nPanel: http://localhost:3000/d/operativo-observabilidad?from=1793916610000\u0026orgId=1\u0026to=1793920215013\u0026viewPanel=1\n"
+                                          "message":  "**Firing**\n\nValue: A=6.8997280463198525, B=6.8997280463198525, C=1\nLabels:\n - alertname = CPU alta · laboratorio\n - component = infraestructura\n - grafana_folder = Observabilidad\n - instance = node-exporter:9100\n - scope = docker-linux\n - severity = warning\n - test_run = pr4-5915f281acd7408f9a4c307680ec0f01\nAnnotations:\n - description = Promedio no ocioso de 5 minutos. CPU observada: 6.8997280463198525 %. En la prueba controlada el umbral se cambia temporalmente a -1 %.\n - summary = PR4: prueba controlada de CPU; umbral temporal -1 %, sin generar carga.\nSource: http://localhost:3000/alerting/grafana/cpu-high/view?orgId=1\nSilence: http://localhost:3000/alerting/silence/new?alertmanager=grafana\u0026matcher=__alert_rule_uid__%3Dcpu-high\u0026matcher=component%3Dinfraestructura\u0026matcher=instance%3Dnode-exporter%3A9100\u0026matcher=scope%3Ddocker-linux\u0026matcher=severity%3Dwarning\u0026matcher=test_run%3Dpr4-5915f281acd7408f9a4c307680ec0f01\u0026orgId=1\nDashboard: http://localhost:3000/d/operativo-observabilidad?from=1793973600000\u0026orgId=1\u0026to=1793977205079\nPanel: http://localhost:3000/d/operativo-observabilidad?from=1793973600000\u0026orgId=1\u0026to=1793977205079\u0026viewPanel=1\n"
                                       }
                       },
-    "finished_at":  "2026-11-05T23:10:17.9708202Z"
+    "finished_at":  "2026-11-06T15:00:08.7699635Z"
 }

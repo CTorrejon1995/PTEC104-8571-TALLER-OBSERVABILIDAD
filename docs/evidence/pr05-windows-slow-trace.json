@@ -1,0 +1,365 @@
+{
+    "traceID":  "50ec9f0ff81fd802f4edf1c76f4e0e62",
+    "spans":  [
+                  {
+                      "traceID":  "50ec9f0ff81fd802f4edf1c76f4e0e62",
+                      "spanID":  "e2a8a324515ee14d",
+                      "operationName":  "validate-request",
+                      "references":  [
+                                         {
+                                             "refType":  "CHILD_OF",
+                                             "traceID":  "50ec9f0ff81fd802f4edf1c76f4e0e62",
+                                             "spanID":  "060506e6a0fddfd2"
+                                         }
+                                     ],
+                      "startTime":  1793977209399498,
+                      "duration":  20126,
+                      "tags":  [
+                                   {
+                                       "key":  "otel.scope.name",
+                                       "type":  "string",
+                                       "value":  "observability-lab"
+                                   },
+                                   {
+                                       "key":  "otel.scope.version",
+                                       "type":  "string",
+                                       "value":  "1.0.0"
+                                   },
+                                   {
+                                       "key":  "span.kind",
+                                       "type":  "string",
+                                       "value":  "internal"
+                                   }
+                               ],
+                      "logs":  [
+
+                               ],
+                      "processID":  "p1",
+                      "warnings":  null
+                  },
+                  {
+                      "traceID":  "50ec9f0ff81fd802f4edf1c76f4e0e62",
+                      "spanID":  "87337527d56ac754",
+                      "operationName":  "HTTP GET service-b/work",
+                      "references":  [
+                                         {
+                                             "refType":  "CHILD_OF",
+                                             "traceID":  "50ec9f0ff81fd802f4edf1c76f4e0e62",
+                                             "spanID":  "060506e6a0fddfd2"
+                                         }
+                                     ],
+                      "startTime":  1793977209419716,
+                      "duration":  601812,
+                      "tags":  [
+                                   {
+                                       "key":  "otel.scope.name",
+                                       "type":  "string",
+                                       "value":  "observability-lab"
+                                   },
+                                   {
+                                       "key":  "otel.scope.version",
+                                       "type":  "string",
+                                       "value":  "1.0.0"
+                                   },
+                                   {
+                                       "key":  "http.request.method",
+                                       "type":  "string",
+                                       "value":  "GET"
+                                   },
+                                   {
+                                       "key":  "http.status_code",
+                                       "type":  "int64",
+                                       "value":  200
+                                   },
+                                   {
+                                       "key":  "server.address",
+                                       "type":  "string",
+                                       "value":  "service-b"
+                                   },
+                                   {
+                                       "key":  "span.kind",
+                                       "type":  "string",
+                                       "value":  "client"
+                                   }
+                               ],
+                      "logs":  [
+
+                               ],
+                      "processID":  "p1",
+                      "warnings":  null
+                  },
+                  {
+                      "traceID":  "50ec9f0ff81fd802f4edf1c76f4e0e62",
+                      "spanID":  "c4826c251dc8969e",
+                      "operationName":  "render-response",
+                      "references":  [
+                                         {
+                                             "refType":  "CHILD_OF",
+                                             "traceID":  "50ec9f0ff81fd802f4edf1c76f4e0e62",
+                                             "spanID":  "060506e6a0fddfd2"
+                                         }
+                                     ],
+                      "startTime":  1793977210021591,
+                      "duration":  5065,
+                      "tags":  [
+                                   {
+                                       "key":  "otel.scope.name",
+                                       "type":  "string",
+                                       "value":  "observability-lab"
+                                   },
+                                   {
+                                       "key":  "otel.scope.version",
+                                       "type":  "string",
+                                       "value":  "1.0.0"
+                                   },
+                                   {
+                                       "key":  "span.kind",
+                                       "type":  "string",
+                                       "value":  "internal"
+                                   }
+                               ],
+                      "logs":  [
+
+                               ],
+                      "processID":  "p1",
+                      "warnings":  null
+                  },
+                  {
+                      "traceID":  "50ec9f0ff81fd802f4edf1c76f4e0e62",
+                      "spanID":  "060506e6a0fddfd2",
+                      "operationName":  "GET /checkout",
+                      "references":  [
+
+                                     ],
+                      "startTime":  1793977209399442,
+                      "duration":  627493,
+                      "tags":  [
+                                   {
+                                       "key":  "otel.scope.name",
+                                       "type":  "string",
+                                       "value":  "observability-lab"
+                                   },
+                                   {
+                                       "key":  "otel.scope.version",
+                                       "type":  "string",
+                                       "value":  "1.0.0"
+                                   },
+                                   {
+                                       "key":  "http.request.method",
+                                       "type":  "string",
+                                       "value":  "GET"
+                                   },
+                                   {
+                                       "key":  "http.status_code",
+                                       "type":  "int64",
+                                       "value":  200
+                                   },
+                                   {
+                                       "key":  "lab.scenario",
+                                       "type":  "string",
+                                       "value":  "slow"
+                                   },
+                                   {
+                                       "key":  "lab.test_run",
+                                       "type":  "string",
+                                       "value":  "pr5-f01182e5841841a6920fc5bd8c09e112"
+                                   },
+                                   {
+                                       "key":  "url.path",
+                                       "type":  "string",
+                                       "value":  "/checkout"
+                                   },
+                                   {
+                                       "key":  "span.kind",
+                                       "type":  "string",
+                                       "value":  "server"
+                                   }
+                               ],
+                      "logs":  [
+
+                               ],
+                      "processID":  "p1",
+                      "warnings":  null
+                  },
+                  {
+                      "traceID":  "50ec9f0ff81fd802f4edf1c76f4e0e62",
+                      "spanID":  "167da70c6e018f27",
+                      "operationName":  "simulated-db-query",
+                      "references":  [
+                                         {
+                                             "refType":  "CHILD_OF",
+                                             "traceID":  "50ec9f0ff81fd802f4edf1c76f4e0e62",
+                                             "spanID":  "5456be11f9f1231e"
+                                         }
+                                     ],
+                      "startTime":  1793977209420930,
+                      "duration":  600125,
+                      "tags":  [
+                                   {
+                                       "key":  "otel.scope.name",
+                                       "type":  "string",
+                                       "value":  "observability-lab"
+                                   },
+                                   {
+                                       "key":  "otel.scope.version",
+                                       "type":  "string",
+                                       "value":  "1.0.0"
+                                   },
+                                   {
+                                       "key":  "lab.delay_ms",
+                                       "type":  "int64",
+                                       "value":  600
+                                   },
+                                   {
+                                       "key":  "lab.simulated",
+                                       "type":  "bool",
+                                       "value":  true
+                                   },
+                                   {
+                                       "key":  "span.kind",
+                                       "type":  "string",
+                                       "value":  "internal"
+                                   }
+                               ],
+                      "logs":  [
+
+                               ],
+                      "processID":  "p2",
+                      "warnings":  null
+                  },
+                  {
+                      "traceID":  "50ec9f0ff81fd802f4edf1c76f4e0e62",
+                      "spanID":  "5456be11f9f1231e",
+                      "operationName":  "GET /work",
+                      "references":  [
+                                         {
+                                             "refType":  "CHILD_OF",
+                                             "traceID":  "50ec9f0ff81fd802f4edf1c76f4e0e62",
+                                             "spanID":  "87337527d56ac754"
+                                         }
+                                     ],
+                      "startTime":  1793977209420894,
+                      "duration":  600419,
+                      "tags":  [
+                                   {
+                                       "key":  "otel.scope.name",
+                                       "type":  "string",
+                                       "value":  "observability-lab"
+                                   },
+                                   {
+                                       "key":  "otel.scope.version",
+                                       "type":  "string",
+                                       "value":  "1.0.0"
+                                   },
+                                   {
+                                       "key":  "http.request.method",
+                                       "type":  "string",
+                                       "value":  "GET"
+                                   },
+                                   {
+                                       "key":  "http.status_code",
+                                       "type":  "int64",
+                                       "value":  200
+                                   },
+                                   {
+                                       "key":  "lab.scenario",
+                                       "type":  "string",
+                                       "value":  "slow"
+                                   },
+                                   {
+                                       "key":  "lab.test_run",
+                                       "type":  "string",
+                                       "value":  "pr5-f01182e5841841a6920fc5bd8c09e112"
+                                   },
+                                   {
+                                       "key":  "url.path",
+                                       "type":  "string",
+                                       "value":  "/work"
+                                   },
+                                   {
+                                       "key":  "span.kind",
+                                       "type":  "string",
+                                       "value":  "server"
+                                   }
+                               ],
+                      "logs":  [
+
+                               ],
+                      "processID":  "p2",
+                      "warnings":  null
+                  }
+              ],
+    "processes":  {
+                      "p1":  {
+                                 "serviceName":  "service-a",
+                                 "tags":  [
+                                              {
+                                                  "key":  "deployment.environment.name",
+                                                  "type":  "string",
+                                                  "value":  "observability-lab"
+                                              },
+                                              {
+                                                  "key":  "service.instance.id",
+                                                  "type":  "string",
+                                                  "value":  "e3f33127-7ad4-4cac-a755-31c7abe423b5"
+                                              },
+                                              {
+                                                  "key":  "service.version",
+                                                  "type":  "string",
+                                                  "value":  "1.0.0"
+                                              },
+                                              {
+                                                  "key":  "telemetry.sdk.language",
+                                                  "type":  "string",
+                                                  "value":  "python"
+                                              },
+                                              {
+                                                  "key":  "telemetry.sdk.name",
+                                                  "type":  "string",
+                                                  "value":  "opentelemetry"
+                                              },
+                                              {
+                                                  "key":  "telemetry.sdk.version",
+                                                  "type":  "string",
+                                                  "value":  "1.45.2"
+                                              }
+                                          ]
+                             },
+                      "p2":  {
+                                 "serviceName":  "service-b",
+                                 "tags":  [
+                                              {
+                                                  "key":  "deployment.environment.name",
+                                                  "type":  "string",
+                                                  "value":  "observability-lab"
+                                              },
+                                              {
+                                                  "key":  "service.instance.id",
+                                                  "type":  "string",
+                                                  "value":  "1a34f726-7bb6-4e30-99d4-f5a577702cc9"
+                                              },
+                                              {
+                                                  "key":  "service.version",
+                                                  "type":  "string",
+                                                  "value":  "1.0.0"
+                                              },
+                                              {
+                                                  "key":  "telemetry.sdk.language",
+                                                  "type":  "string",
+                                                  "value":  "python"
+                                              },
+                                              {
+                                                  "key":  "telemetry.sdk.name",
+                                                  "type":  "string",
+                                                  "value":  "opentelemetry"
+                                              },
+                                              {
+                                                  "key":  "telemetry.sdk.version",
+                                                  "type":  "string",
+                                                  "value":  "1.45.2"
+                                              }
+                                          ]
+                             }
+                  },
+    "warnings":  null
+}

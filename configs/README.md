@@ -8,11 +8,12 @@ Centralizar los archivos de configuración de los componentes de observabilidad.
 - `snmp-exporter/`: autenticación y módulos SNMP expuestos a Prometheus.
 - `loki/`: configuración de almacenamiento y recepción de logs (PR #3).
 - `promtail/`: scraping y pipeline de procesamiento JSON (PR #3).
-- `otel-collector/`: recepción y exportación de telemetría (PR #5).
+- `otel-collector/`: recepción OTLP, límite de memoria, batching y exportación a Jaeger (PR #5).
+- `jaeger/`: Jaeger v2 con API/UI y almacenamiento de laboratorio en memoria.
 
 ## Configuraciones implementadas
 
-PR #3 añade `loki/loki.yml` (TSDB v13, filesystem, WAL y retención de siete días) y `promtail/promtail.yml` (lectura JSON, timestamp RFC3339 y etiqueta level). Las carpetas de OTEL siguen reservadas para PR #5.
+PR #3 añade `loki/loki.yml` (TSDB v13, filesystem, WAL y retención de siete días) y `promtail/promtail.yml` (lectura JSON, timestamp RFC3339 y etiqueta level). PR #5 añade otel-collector/otel-collector.yml y jaeger/jaeger.yml para recibir OTLP y almacenar/consultar trazas en memoria.
 
 - `prometheus/prometheus.yml`: define los jobs `prometheus`, `node-exporter` y `snmp-device`.
 - `snmp-exporter/snmp.yml`: perfil reducido IF-MIB para consultar contadores de octetos de 64 bits, nombre y estado operacional de interfaces. Utiliza el perfil `public_v2` de SNMPv2c.
@@ -29,7 +30,7 @@ Desde la raíz del repositorio:
 .\dev.ps1 validate
 ```
 
-El script valida Compose y ejecuta los validadores nativos de Prometheus, Loki y Promtail dentro de sus imágenes fijadas.
+El script valida Compose y ejecuta los validadores nativos de Prometheus, Loki, Promtail, Jaeger y Collector dentro de sus imágenes fijadas; también comprueba los archivos de Grafana y la sintaxis de los microservicios.
 
 ## Referencias
 

@@ -1,0 +1,61 @@
+{
+    "status":  "passed",
+    "started_at":  "2026-11-06T15:00:08.7768915Z",
+    "environment":  "windows-docker-compose",
+    "platform":  "Microsoft Windows NT 10.0.26300.0",
+    "checks":  [
+                   "collector-jaeger-application-ready",
+                   "fresh-sdk-traces-stored-in-jaeger",
+                   "same-trace-id-and-real-parent-reference-across-http-services",
+                   "configured-simulated-delay-and-measured-span-durations",
+                   "longest-leaf-span-identified-without-summing-overlapping-spans"
+               ],
+    "simulation":  "Worker lookup deliberately waits 40ms or 600ms; HTTP requests, SDK spans, export and Jaeger storage are real.",
+    "fast":  {
+                 "scenario":  "fast",
+                 "test_run":  "pr5-0f337f08a7d74119a26cb9ad8eb549a7",
+                 "trace_id":  "98f67688c60037654dab141424e9c0ee",
+                 "jaeger_url":  "http://127.0.0.1:16686/trace/98f67688c60037654dab141424e9c0ee",
+                 "spans":  6,
+                 "services":  [
+                                  "service-a",
+                                  "service-b"
+                              ],
+                 "cross_service_parent_reference":  true,
+                 "root_duration_ms":  68.189,
+                 "simulated_query_duration_ms":  40.111,
+                 "configured_delay_ms":  40,
+                 "longest_leaf":  {
+                                      "operation":  "simulated-db-query",
+                                      "service":  "service-b",
+                                      "duration_ms":  40.111,
+                                      "root_percent":  58.82
+                                  },
+                 "trace_file":  "pr05-windows-fast-trace.json"
+             },
+    "slow":  {
+                 "scenario":  "slow",
+                 "test_run":  "pr5-f01182e5841841a6920fc5bd8c09e112",
+                 "trace_id":  "50ec9f0ff81fd802f4edf1c76f4e0e62",
+                 "jaeger_url":  "http://127.0.0.1:16686/trace/50ec9f0ff81fd802f4edf1c76f4e0e62",
+                 "spans":  6,
+                 "services":  [
+                                  "service-a",
+                                  "service-b"
+                              ],
+                 "cross_service_parent_reference":  true,
+                 "root_duration_ms":  627.493,
+                 "simulated_query_duration_ms":  600.125,
+                 "configured_delay_ms":  600,
+                 "longest_leaf":  {
+                                      "operation":  "simulated-db-query",
+                                      "service":  "service-b",
+                                      "duration_ms":  600.125,
+                                      "root_percent":  95.64
+                                  },
+                 "trace_file":  "pr05-windows-slow-trace.json"
+             },
+    "slow_minus_fast_root_ms":  559.304,
+    "analysis_file":  "pr05-windows-analysis.md",
+    "finished_at":  "2026-11-06T15:00:10.5571288Z"
+}

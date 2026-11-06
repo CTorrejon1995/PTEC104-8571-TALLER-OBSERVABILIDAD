@@ -1,6 +1,6 @@
 # Validación — PR #4
 
-**Estado: integración completa aprobada en Windows y evidencias visuales recibidas.** La implementación y la documentación del PR #4 están listas para revisión. Las trazas del PR #5 y el cierre integral de la entrega siguen pendientes.
+**Estado: integración completa aprobada en Windows y evidencias visuales recibidas.** La implementación y la documentación del PR #4 están listas para revisión. La integración posterior que incluye las trazas se documenta en [PR05_VALIDACION.md](PR05_VALIDACION.md).
 
 ## Comprobaciones y evidencia
 

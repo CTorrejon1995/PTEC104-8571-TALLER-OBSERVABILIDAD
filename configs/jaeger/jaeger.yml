@@ -1,0 +1,50 @@
+# Single-process Jaeger v2 for the lab. Traces are kept in memory, not on disk.
+extensions:
+  jaeger_storage:
+    backends:
+      lab_memory:
+        memory:
+          max_traces: 5000
+  jaeger_query:
+    storage:
+      traces: lab_memory
+    http:
+      endpoint: 0.0.0.0:16686
+  healthcheckv2:
+    use_v2: true
+    http:
+      endpoint: 0.0.0.0:13134
+
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  batch:
+    timeout: 1s
+
+exporters:
+  jaeger_storage_exporter:
+    trace_storage: lab_memory
+
+service:
+  extensions: [jaeger_storage, jaeger_query, healthcheckv2]
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [jaeger_storage_exporter]
+  telemetry:
+    logs:
+      level: info
+    metrics:
+      readers:
+        - pull:
+            exporter:
+              prometheus:
+                host: 0.0.0.0
+                port: 8889
