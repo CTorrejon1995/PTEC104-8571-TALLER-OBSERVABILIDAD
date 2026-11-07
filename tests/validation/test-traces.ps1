@@ -12,7 +12,7 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 $ProjectRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
-if (-not $EvidencePath) { $EvidencePath = Join-Path $ProjectRoot 'docs/evidence/pr05-windows-validation.json' }
+if (-not $EvidencePath) { $EvidencePath = Join-Path $ProjectRoot 'docs/evidence/pr-05/results/pr05-windows-validation.json' }
 $EvidenceDirectory = Split-Path -Parent $EvidencePath
 $prefix = [IO.Path]::GetFileNameWithoutExtension($EvidencePath).Replace('-validation', '')
 $report = [ordered]@{

@@ -1,249 +1,264 @@
-# Stack de Observabilidad Completo
+# Stack de Observabilidad — Infraestructura TI
 
-Proyecto académico de Infraestructura TI para desplegar y validar una plataforma de observabilidad Open Source mediante Docker Compose. El objetivo final es integrar métricas, logs y trazas distribuidas en un entorno local reproducible.
+Laboratorio académico de **observabilidad local con Docker Compose**. Reúne métricas de infraestructura y red, registros JSON centralizados, visualización y alertas, y trazas distribuidas entre microservicios. El propósito es demostrar cómo detectar, investigar y documentar el comportamiento de un sistema mediante señales complementarias, con pruebas reproducibles y evidencias verificables.
 
-## Objetivos
+El stack está compuesto por **13 servicios** y funciona en Windows con Docker Desktop y contenedores Linux. No requiere servicios cloud ni instalar Python en el equipo anfitrión: las aplicaciones y herramientas de validación se ejecutan en contenedores. El alcance y las evidencias de las pruebas realizadas se encuentran en el [informe técnico](docs/INFORME.md) y en [docs/evidence/](docs/evidence/README.md).
 
-- Recolectar métricas de infraestructura y red.
-- Centralizar y consultar registros estructurados.
-- Visualizar métricas y logs y demostrar alertamiento.
-- Instrumentar una aplicación de microservicios y analizar trazas distribuidas.
+## ¿Qué observa el proyecto?
 
-## Arquitectura prevista
-
-El stack se organiza en cuatro capas:
-
-1. **Fuentes:** sistema operativo, dispositivo de red simulado, logs JSON y microservicios.
-2. **Recolección y procesamiento:** Prometheus, Node Exporter, SNMP Exporter, Promtail y OpenTelemetry Collector.
-3. **Almacenamiento y consulta:** Prometheus, Loki y Jaeger.
-4. **Visualización y operación:** Grafana, dashboards y notificaciones Webhook.
-
-El desarrollo se organizó por etapas: fundación del repositorio, métricas, logs, Grafana/alertas y trazas. El cierre documental reúne sus resultados y evidencias en [docs/INFORME.md](docs/INFORME.md). Los números automáticos de los Pull Requests de GitHub pueden diferir de los nombres de etapa.
-
-Esta versión integra métricas, logs, Grafana/alertas y trazas distribuidas. La integración completa se aprobó en Windows con Docker Desktop; Jaeger muestra una transacción real entre los dos microservicios. Las capturas originales y el alcance de las pruebas se documentan en [docs/PR05_VALIDACION.md](docs/PR05_VALIDACION.md).
-
-## PR #5 — OpenTelemetry, Jaeger y microservicios
-
-Se añaden Collector Contrib 0.164.0, Jaeger 2.23.0 y dos procesos HTTP con OpenTelemetry Python 1.45.2. El total configurado es de trece servicios. La app publica http://localhost:8082 y Jaeger http://localhost:16686.
-
-La prueba genera escenarios de 40/600 ms, exige una traza nueva con ambos servicios y referencias padre-hijo correctas y guarda un análisis de latencia. Las demoras son simuladas; HTTP y los SDK son reales.
-
-Guía: [docs/PR05_TRAZAS.md](docs/PR05_TRAZAS.md). Resultados de preparación y Windows: [docs/PR05_VALIDACION.md](docs/PR05_VALIDACION.md). La captura de Jaeger muestra dos servicios y seis spans; la operación simulada de service-b ocupa unos 600 ms de una transacción de 627 ms.
-
-~~~powershell
-.\dev.ps1 validate
-.\dev.ps1 up -Build
-.\dev.ps1 status
-.\dev.ps1 test -Integration
-~~~
-
-## PR #4 — Grafana y alerta Webhook
-
-Grafana 12.4.14 carga automáticamente Prometheus, Loki, un Dashboard Operativo de cuatro paneles y una regla CPU > 80 % durante 1 minuto. El receptor local conserva los avisos reales en SQLite.
-
-- Dashboard: <http://localhost:3000/d/operativo-observabilidad>.
-- Usuario/contraseña iniciales: `admin` / `observability-lab`.
-- Avisos Webhook: <http://localhost:8081>.
-- Guía de despliegue, prueba controlada y capturas: [docs/PR04_GRAFANA.md](docs/PR04_GRAFANA.md).
-- Estado de validación por entorno: [docs/PR04_VALIDACION.md](docs/PR04_VALIDACION.md).
-
-~~~powershell
-.\dev.ps1 validate
-.\dev.ps1 up -Build
-.\dev.ps1 status
-.\dev.ps1 test -Integration
-~~~
-
-La integración comprueba métricas, logs y Grafana. Para el Webhook utiliza CPU real con umbral temporal -1 %, espera un aviso enviado por Grafana y restaura 80 % / 1 minuto. Genera un informe con el resultado real. El bloque hasta PR #4 contiene nueve servicios; con el PR #5 el total configurado es trece. En el dashboard seleccionar el montaje `/mnt/docker-desktop-disk` de Docker Desktop.
-
-## PR #3 — Logs JSON, Promtail y Loki
-
-| Servicio nuevo | Versión | Función |
+| Señal | Origen y recorrido | Qué permite comprobar |
 |---|---|---|
-| Loki | grafana/loki:3.6.19 | Recibir, almacenar y consultar logs |
-| Promtail | grafana/promtail:3.6.11 | Leer JSON, extraer timestamp y etiquetar level |
-| cloud-logs | observability-cloud-logs:1.0.0 | Generar eventos sintéticos info, warn y error |
+| **Métricas** | Node Exporter y agente SNMP simulado → SNMP Exporter / Prometheus | CPU, almacenamiento y contadores de red mediante PromQL |
+| **Logs** | Generador JSON → volumen compartido → Promtail → Loki | Ingesta de eventos y búsqueda por severidad con LogQL |
+| **Visualización y alertas** | Prometheus y Loki → Grafana → receptor Webhook | Dashboard operativo, regla de CPU y avisos `firing` / `resolved` almacenados en SQLite |
+| **Trazas** | `service-a` → `service-b` → SDK OpenTelemetry → Collector → Jaeger | Relaciones padre-hijo, duración de spans y localización de la operación más lenta |
 
-El generador usa Python 3.12.12 y no necesita una cuenta cloud ni Python instalado en Windows. Es una simulación explícita del origen de los logs; Promtail, Loki y las consultas funcionan realmente.
+> **Alcance:** Node Exporter mide el entorno Linux que ejecuta Docker Desktop, no el sistema Windows anfitrión. El agente SNMP, los eventos cloud y las esperas de la aplicación son simulaciones de laboratorio; la recolección, comunicación entre servicios, exportación y consultas se ejecutan realmente. Jaeger usa almacenamiento en memoria, por lo que las trazas activas no sobreviven a su reinicio.
 
-Guía completa: [docs/PR03_LOGS.md](docs/PR03_LOGS.md).
+## Arquitectura funcional
 
-~~~powershell
-.\dev.ps1 validate
-.\dev.ps1 up -Build
-.\dev.ps1 status
-.\dev.ps1 test -Integration
-~~~
+```mermaid
+flowchart LR
+    subgraph FUENTES[Fuentes de telemetría]
+        NODE[Node Exporter]
+        SNMP[Agente SNMP simulado]
+        LOGS[Generador de logs JSON]
+        APP[service-a → service-b]
+    end
 
-La validación incluye Prometheus, Loki y Promtail. La integración comprueba métricas y logs. Para los logs escribe un registro nuevo con identificador único mediante el generador y espera encontrarlo en Loki con level=error.
+    subgraph METRICAS[Métricas]
+        SNMPE[SNMP Exporter]
+        PROM[Prometheus]
+    end
 
-Endpoints nuevos:
+    subgraph REGISTROS[Logs]
+        PTAIL[Promtail]
+        LOKI[Loki]
+    end
 
-- Loki: http://localhost:3100/ready
-- Promtail: http://localhost:9080/ready
-- Targets de Promtail: http://localhost:9080/targets
+    subgraph TRAZAS[Trazas]
+        OTEL[OpenTelemetry Collector]
+        JAEGER[Jaeger]
+    end
 
-Las consultas del PR #3 se prueban contra la API de Loki. El PR #4 añade la vista de logs en Grafana con filtro de severidad y actualización cada 5 segundos.
+    GRAF[Grafana: dashboard y alerta]
+    WEB[Receptor Webhook + SQLite]
+    USUARIO[Operador / estudiante]
 
-Promtail está fuera de soporte según Grafana. Se conserva por ser un componente exigido expresamente en la consigna del laboratorio; la migración futura a Alloy queda fuera de este PR.
-
-## Estado de implementación
-
-### PR #2 — Infrastructure & Metrics
-
-Servicios incluidos:
-
-| Servicio | Imagen / origen | Función |
-|---|---|---|
-| Prometheus | `prom/prometheus:v3.14.0` | Scraping y almacenamiento de métricas |
-| Node Exporter | `prom/node-exporter:v1.12.1` | Métricas del entorno Linux de Docker |
-| SNMP Exporter | `prom/snmp-exporter:v0.31.0` | Traducción de SNMP a métricas Prometheus |
-| SNMP Agent | Imagen local `observability-snmp-agent:1.0.0` | Simulación de un dispositivo con Net-SNMP |
-
-**Consideración sobre Windows y Docker Desktop:** Node Exporter es un exportador de métricas Linux. En esta configuración contenedorizada, las rutas `/proc`, `/sys` y `/` se montan desde el entorno Linux donde corre el daemon de Docker. En Docker Desktop para Windows esto corresponde al entorno Linux/VM de Docker Desktop, no al sistema operativo Windows anfitrión. Por tanto, no debe interpretarse como telemetría nativa de Windows. La recolección de métricas específicas de Windows requeriría `windows_exporter`, fuera del alcance de este PR.
-
-El agente SNMP solo está conectado a la red Docker interna y no publica UDP/161 en el host. La comunidad SNMPv2c `public` es de laboratorio y no proporciona cifrado.
-
-## Requisitos previos
-
-- Windows 10/11.
-- Docker Desktop instalado y en ejecución, con contenedores Linux habilitados.
-- Docker Compose disponible mediante `docker compose`.
-- PowerShell 5.1 o PowerShell 7.
-- Git para el flujo de ramas y Pull Requests.
-
-## Instalación
-
-1. Clonar el repositorio.
-2. Copiar `.env.example` a `.env` si aún no existe.
-3. Revisar las variables locales.
-4. Validar las configuraciones:
-
-```powershell
-Copy-Item .env.example .env
-.\dev.ps1 validate
+    NODE --> PROM
+    SNMP --> SNMPE --> PROM
+    LOGS -->|Archivo JSON compartido| PTAIL --> LOKI
+    APP -->|OTLP/HTTP| OTEL -->|OTLP/gRPC| JAEGER
+    PROM --> GRAF
+    LOKI --> GRAF
+    GRAF -->|Alerta controlada| WEB
+    USUARIO --> GRAF
+    USUARIO --> JAEGER
+    USUARIO -->|Pruebas y consultas| APP
 ```
 
-## Ejecución
-
-Construir el simulador local e iniciar los servicios:
-
-```powershell
-.\dev.ps1 up -Build
-```
-
-Verificar el estado:
-
-```powershell
-.\dev.ps1 status
-.\dev.ps1 test -Integration
-```
-
-Interfaces locales:
-
-- Prometheus: http://localhost:9090
-- Node Exporter: http://localhost:9100/metrics
-- SNMP Exporter: http://localhost:9116
-
-El agente SNMP no se expone en un puerto del host; SNMP Exporter lo consulta por la red interna de Docker.
-
-## Consultas PromQL
-
-### Porcentaje de utilización de CPU
-
-```promql
-100 * (1 - avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])))
-```
-
-La consulta calcula el porcentaje de tiempo no ocioso promedio entre los CPU lógicos observados por Node Exporter. La ventana de cinco minutos suaviza variaciones puntuales.
-
-### Ancho de banda entrante en Mbps
-
-```promql
-sum by (instance, ifName) (rate(ifHCInOctets{ifName!="lo"}[5m]) * 8 / 1000000)
-```
-
-### Ancho de banda saliente en Mbps
-
-```promql
-sum by (instance, ifName) (rate(ifHCOutOctets{ifName!="lo"}[5m]) * 8 / 1000000)
-```
-
-Los contadores SNMP se expresan en octetos. `rate()` calcula octetos por segundo; multiplicar por ocho convierte a bits por segundo y dividir por un millón convierte a megabits por segundo (Mbps, base decimal). Los nombres de interfaz se incorporan como etiqueta `ifName`.
-
-## Validación y pruebas
-
-```powershell
-.\dev.ps1 validate
-.\dev.ps1 test
-.\dev.ps1 test -Integration
-```
-
-La integración requiere que el stack esté iniciado. Comprueba los jobs de métricas, los contadores CPU/red, la ingesta de logs y Grafana, incluido el envío real de la alerta de prueba y la restauración de su regla. Después exige trazas nuevas de ambos microservicios recuperadas de Jaeger y analiza su latencia. Ver [tests/README.md](tests/README.md).
-
-Para inspeccionar directamente el endpoint del SNMP Exporter:
-
-```text
-http://localhost:9116/snmp?target=snmp-agent:161&auth=public_v2&module=if_mib
-```
-
-La consulta de ancho de banda necesita al menos dos muestras del contador separadas por el intervalo de scraping para que `rate()` calcule una tasa. Para demostrar variación, debe circular tráfico por la interfaz del agente SNMP.
-
-## Administración mediante dev.ps1
-
-| Comando | Responsabilidad |
-|---|---|
-| `.\dev.ps1 up` | Inicia los servicios |
-| `.\dev.ps1 up -Build` | Construye el simulador y levanta los servicios |
-| `.\dev.ps1 down` | Detiene contenedores sin eliminar volúmenes |
-| `.\dev.ps1 restart` | Reinicia servicios |
-| `.\dev.ps1 status` | Muestra el estado |
-| `.\dev.ps1 logs` | Sigue los logs |
-| `.\dev.ps1 logs -Service prometheus` | Sigue los logs de Prometheus |
-| `.\dev.ps1 validate` | Valida Compose, Prometheus, Loki, Promtail, Grafana, Jaeger, Collector y sintaxis de los microservicios |
-| `.\dev.ps1 test` | Ejecuta pruebas estáticas |
-| `.\dev.ps1 test -Integration` | Comprueba métricas, logs, Grafana/Webhook y trazas distribuidas |
-| `.\dev.ps1 clean` | Elimina contenedores, redes y volúmenes tras confirmación |
-
-El comando `migrate` no se implementa mientras no exista una migración real que administrar.
+El flujo se divide en tres canales de telemetría. Grafana consulta métricas y logs; Jaeger permite explorar trazas distribuidas. Las pruebas de integración comprueban estos canales y verifican que la alerta de CPU vuelva a su configuración normal después del ensayo controlado.
 
 ## Estructura del repositorio
 
 ```text
 .
-├── docker-compose.yml
-├── dev.ps1
-├── README.md
-├── .env.example
-├── .gitignore
-├── app/
-├── configs/
-├── dashboards/
-├── simulators/
-├── tools/
-├── tests/
-└── docs/
+├── README.md                    # Guía principal
+├── docker-compose.yml           # Orquestación de los 13 servicios
+├── dev.ps1                      # Comandos de desarrollo y validación
+├── .env.example                 # Variables locales de ejemplo
+├── app/                         # Microservicios A/B y telemetría OpenTelemetry
+│   ├── service-a/
+│   ├── service-b/
+│   └── shared/
+├── configs/                     # Configuración de Prometheus, SNMP, Loki,
+│   ├── prometheus/              # Promtail, Collector y Jaeger
+│   ├── snmp-exporter/
+│   ├── loki/
+│   ├── promtail/
+│   ├── otel-collector/
+│   └── jaeger/
+├── dashboards/                  # Dashboard, fuentes de datos y alertas Grafana
+│   ├── dashboards/
+│   ├── provisioning/
+│   └── alerting/
+├── simulators/                  # Agente SNMP y generador de logs JSON
+│   ├── snmp-agent/
+│   └── cloud-logs/
+├── tools/                       # Receptor Webhook y comprobaciones auxiliares
+│   └── webhook-receiver/
+├── tests/                       # Pruebas de validación e integración
+│   ├── validation/
+│   └── integration/
+└── docs/                        # Informe, documentación por etapa y evidencias
+    ├── README.md
+    ├── INFORME.md
+    ├── PR03.md
+    ├── PR04.md
+    ├── PR05.md
+    ├── architecture/
+    ├── references/
+    └── evidence/
+        ├── README.md
+        ├── pr-02/
+        ├── pr-03/
+        ├── pr-04/
+        └── pr-05/
 ```
 
-## Documentación por responsabilidad
+Las carpetas `docs/architecture/` y `docs/references/` están reservadas para material complementario. Las capturas y resultados efectivamente registrados se organizan en `docs/evidence/pr-XX/`, separados en `screenshots/` y `results/` cuando corresponde.
 
-- [Aplicación y microservicios](app/README.md)
-- [Configuraciones de infraestructura](configs/README.md)
-- [Dashboards y alertamiento](dashboards/README.md)
-- [Simuladores](simulators/README.md)
-- [Herramientas auxiliares](tools/README.md)
-- [Pruebas y validación](tests/README.md)
-- [Documentación técnica y evidencias](docs/README.md)
+## Requisitos
 
-## Redes y persistencia
+- **Windows 10/11** con Docker Desktop iniciado, usando **contenedores Linux** (WSL 2 en la configuración documentada).
+- **Docker Engine y Docker Compose v2**, accesibles desde la terminal como `docker` y `docker compose`.
+- **Windows PowerShell 5.1 o PowerShell 7**, para ejecutar `dev.ps1`.
+- **Git**, para clonar y versionar el proyecto.
+- Recursos suficientes para iniciar 13 contenedores y puertos locales disponibles: `3000`, `8081`, `8082`, `9090`, `9100`, `9116`, `3100`, `9080`, `16686`, `4317`, `4318` y `13133`.
 
-El PR #3 conserva las redes y servicios de métricas. Añade Loki y Promtail a `observability`. El generador trabaja sin red y comparte un volumen de archivos con Promtail, que lo monta en lectura. Loki utiliza `loki-data`; los archivos usan `cloud-logs-data` y los offsets de lectura usan `promtail-positions`. El PR #4 utiliza `grafana-data` para Grafana y añade `webhook-data` para los avisos SQLite. El PR #5 configura Jaeger con almacenamiento en memoria; sus trazas se exportan a JSON durante la prueba. El volumen jaeger-data reservado no se monta en esa modalidad.
+No es necesario instalar Python en Windows ni disponer de credenciales de proveedores externos. Las credenciales predeterminadas de Grafana son **solo para uso local de laboratorio**; no expongas este stack directamente a Internet.
 
-` .\dev.ps1 down` no elimina volúmenes. ` .\dev.ps1 clean` es destructivo y requiere confirmación.
+## Instalación y ejecución paso a paso
+
+Abre PowerShell y ejecuta los comandos desde la raíz del repositorio.
+
+**1. Comprueba los requisitos:**
+
+```powershell
+docker --version
+docker compose version
+docker info
+git --version
+$PSVersionTable.PSVersion
+```
+
+`docker info` debe poder comunicarse con Docker Desktop. Si falla, abre Docker Desktop y espera a que el motor esté disponible.
+
+**2. Clona el repositorio y entra en él:**
+
+```powershell
+git clone https://github.com/CTorrejon1995/PTEC104-8571-TALLER-OBSERVABILIDAD.git
+Set-Location .\PTEC104-8571-TALLER-OBSERVABILIDAD
+```
+
+**3. Crea la configuración local:**
+
+```powershell
+if (-not (Test-Path .env)) { Copy-Item .env.example .env }
+```
+
+Revisa `.env` si necesitas cambiar el nombre del proyecto o las credenciales locales de Grafana. No publiques contraseñas reales en Git.
+
+**4. Valida y levanta el entorno:**
+
+```powershell
+.\dev.ps1 validate
+.\dev.ps1 up -Build
+.\dev.ps1 status
+```
+
+`validate` comprueba el modelo Compose y las configuraciones. `up -Build` prepara las imágenes locales cuando hace falta y levanta los servicios en segundo plano. `status` permite revisar el estado de los contenedores. En el stack completo se esperan **13 servicios configurados**.
+
+Si PowerShell bloquea la ejecución de scripts, puedes habilitarlos únicamente en esa sesión y volver a intentarlo:
+
+```powershell
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned
+```
+
+**5. Ejecuta las pruebas:**
+
+```powershell
+.\dev.ps1 test
+.\dev.ps1 test -Integration
+```
+
+La prueba estática revisa las configuraciones. La integración requiere que el stack esté iniciado y comprueba métricas, logs, Grafana/Webhook y trazas distribuidas. La prueba de alertas usa temporalmente un umbral controlado y después restaura la regla normal de **CPU > 80 % durante 1 minuto**. Las pruebas pueden generar nuevos resultados en `docs/evidence/`.
+
+**6. Explora los resultados:** abre Grafana, consulta las métricas en Prometheus, revisa eventos en Loki y genera solicitudes de prueba desde la aplicación para inspeccionar trazas en Jaeger. Consulta los accesos de la tabla siguiente.
+
+**7. Detén el laboratorio al terminar:**
+
+```powershell
+.\dev.ps1 down
+```
+
+Este comando conserva los volúmenes. Evita `clean` si quieres mantener métricas, logs y avisos guardados.
+
+## Comandos de administración
+
+| Comando | Responsabilidad |
+|---|---|
+| `.\dev.ps1 validate` | Verificar Compose y configuraciones de los componentes |
+| `.\dev.ps1 up` | Levantar los servicios existentes |
+| `.\dev.ps1 up -Build` | Construir imágenes locales cuando corresponda e iniciar el stack |
+| `.\dev.ps1 status` | Mostrar el estado de los contenedores |
+| `.\dev.ps1 logs` | Seguir los logs de todos los servicios |
+| `.\dev.ps1 logs -Service grafana` | Seguir los logs de un servicio concreto |
+| `.\dev.ps1 test` | Ejecutar la validación estática |
+| `.\dev.ps1 test -Integration` | Probar métricas, logs, Grafana/Webhook y trazas de extremo a extremo |
+| `.\dev.ps1 restart` | Reiniciar los servicios |
+| `.\dev.ps1 down` | Detener y retirar contenedores/redes sin borrar volúmenes |
+| `.\dev.ps1 clean` | Eliminar también los volúmenes **tras confirmación**; acción destructiva |
+
+Para ver detalles de diagnóstico durante la validación, PowerShell permite añadir `-Verbose` a los comandos compatibles.
+
+## Interfaces y enlaces locales
+
+Estos enlaces funcionan **después de iniciar Docker Compose** y desde el equipo que ejecuta Docker Desktop. Los puertos se publican en `127.0.0.1`, no para acceso remoto.
+
+| Servicio | URL local | Uso |
+|---|---|---|
+| **Grafana** | [http://localhost:3000](http://localhost:3000) | Interfaz de visualización y alertas |
+| **Dashboard operativo** | [http://localhost:3000/d/operativo-observabilidad](http://localhost:3000/d/operativo-observabilidad) | CPU, storage, SNMP y logs |
+| **Prometheus** | [http://localhost:9090](http://localhost:9090) | Consultas PromQL y estado de targets |
+| **Node Exporter** | [http://localhost:9100/metrics](http://localhost:9100/metrics) | Métricas del entorno Linux de Docker |
+| **SNMP Exporter** | [http://localhost:9116](http://localhost:9116) | Exportación de contadores SNMP |
+| **Loki** | [http://localhost:3100/ready](http://localhost:3100/ready) | Estado del servicio de logs; las consultas se realizan por API o Grafana |
+| **Promtail** | [http://localhost:9080/targets](http://localhost:9080/targets) | Estado de objetivos de lectura de logs |
+| **Receptor Webhook** | [http://localhost:8081](http://localhost:8081) | Servicio local de recepción de alertas |
+| **Aplicación instrumentada** | [http://localhost:8082](http://localhost:8082) | Acceso al servicio A y generación de solicitudes |
+| **Jaeger** | [http://localhost:16686](http://localhost:16686) | Exploración de trazas y spans |
+| **Collector (salud)** | [http://localhost:13133](http://localhost:13133) | Endpoint de comprobación de salud |
+
+**Grafana (laboratorio):** usuario `admin`, contraseña inicial `observability-lab`, salvo que se cambien en `.env`. El agente SNMP y `service-b` solo se alcanzan desde la red interna de Docker. Los puertos `4317` y `4318` son receptores OTLP del Collector, no interfaces web.
+
+## Documentación y evidencias
+
+| Documento | Contenido |
+|---|---|
+| [Índice de documentación](docs/README.md) | Guía de navegación de `docs/` |
+| [Informe técnico](docs/INFORME.md) | Desarrollo académico, procedimiento, resultados y conclusiones |
+| [PR03 — Logs](docs/PR03.md) | Implementación, uso y validación de Loki/Promtail |
+| [PR04 — Grafana y alertas](docs/PR04.md) | Dashboard, Webhook, corrección de Windows y validación |
+| [PR05 — Trazas](docs/PR05.md) | OpenTelemetry, Jaeger, pruebas y análisis de latencia |
+| [Índice de evidencias](docs/evidence/README.md) | Capturas y resultados agrupados por etapa |
+| [Guía de pruebas](tests/README.md) | Alcance de los validadores y pruebas disponibles |
+| [Microservicios](app/README.md) | Aplicación HTTP y telemetría |
+| [Configuraciones](configs/README.md) | Archivos de infraestructura |
+| [Dashboards](dashboards/README.md) | Provisioning de Grafana y alertamiento |
+| [Simuladores](simulators/README.md) | Orígenes simulados de métricas y logs |
+| [Herramientas](tools/README.md) | Receptor Webhook y utilidades |
+
+La numeración `PR03`–`PR05` corresponde a **etapas de desarrollo del laboratorio** y puede no coincidir con el número automático de un Pull Request en GitHub.
+
+## Consideraciones de persistencia y seguridad
+
+Prometheus, Loki, Grafana, los logs compartidos, las posiciones de Promtail y los eventos Webhook utilizan volúmenes Docker. `down` los conserva; `clean` los elimina. Jaeger está configurado con almacenamiento en memoria, por lo que sus trazas se pierden al reiniciar el servicio; las evidencias exportadas permiten conservar resultados históricos.
+
+El agente SNMP usa una comunidad de demostración y la cuenta inicial de Grafana está destinada al entorno local. El proyecto no debe considerarse una configuración de producción sin endurecimiento de seguridad, autenticación y políticas de retención adecuadas.
 
 ## Referencias técnicas
 
-- Prometheus Authors. (s. f.). *Prometheus documentation*. https://prometheus.io/docs/
-- Prometheus Authors. (s. f.). *Node Exporter*. https://github.com/prometheus/node_exporter
-- Prometheus Authors. (s. f.). *SNMP Exporter*. https://github.com/prometheus/snmp_exporter
-- Docker, Inc. (s. f.). *Docker Compose documentation*. https://docs.docker.com/compose/
+- [Docker Compose — Documentación oficial](https://docs.docker.com/compose/)
+- [Prometheus — Documentación](https://prometheus.io/docs/)
+- [Prometheus Node Exporter](https://github.com/prometheus/node_exporter)
+- [Prometheus SNMP Exporter](https://github.com/prometheus/snmp_exporter)
+- [Grafana — Documentación](https://grafana.com/docs/grafana/latest/)
+- [Grafana Loki — Documentación](https://grafana.com/docs/loki/latest/)
+- [Grafana Promtail — Documentación](https://grafana.com/docs/loki/latest/send-data/promtail/)
+- [OpenTelemetry — Documentación](https://opentelemetry.io/docs/)
+- [OpenTelemetry Collector](https://opentelemetry.io/docs/collector/)
+- [Jaeger — Documentación](https://www.jaegertracing.io/docs/)
+- [PowerShell — Documentación](https://learn.microsoft.com/powershell/)
+
+Estas referencias explican las tecnologías utilizadas; los resultados particulares del laboratorio se sustentan en las pruebas y evidencias del propio repositorio.

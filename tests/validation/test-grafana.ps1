@@ -34,7 +34,7 @@ $report = [ordered]@{
 }
 if ($nativeMode) { $report.mode = 'native-binaries' }
 if ([string]::IsNullOrWhiteSpace($EvidencePath)) {
-    $EvidencePath = Join-Path $ProjectRoot 'docs/evidence/pr04-windows-validation.json'
+    $EvidencePath = Join-Path $ProjectRoot 'docs/evidence/pr-04/results/pr04-windows-validation.json'
 }
 $temporaryDir = $null
 $originalRuleBytes = $null
@@ -52,8 +52,26 @@ function Save-Report {
 
 function Invoke-Compose {
     param([string[]]$Arguments)
-    & docker compose --project-directory $ProjectRoot -f $ComposeFile @Arguments
-    if ($LASTEXITCODE -ne 0) { throw "Docker Compose fallo con codigo $LASTEXITCODE." }
+
+    # Docker Compose escribe su progreso (Recreate, Started...) en stderr.
+    # Windows PowerShell 5.1 puede convertirlo en un error terminante si
+    # ErrorActionPreference es Stop. Se comprueba el codigo de salida real.
+    $previousPreference = $ErrorActionPreference
+    $output = @()
+    $exitCode = $null
+    try {
+        $ErrorActionPreference = 'Continue'
+        $output = @(& docker compose --project-directory $ProjectRoot -f $ComposeFile @Arguments 2>&1)
+        $exitCode = $LASTEXITCODE
+    }
+    finally {
+        $ErrorActionPreference = $previousPreference
+    }
+
+    if ($null -eq $exitCode -or [int]$exitCode -ne 0) {
+        $details = ($output | ForEach-Object { $_.ToString() } | Select-Object -Last 20) -join [Environment]::NewLine
+        throw "Docker Compose fallo con codigo $exitCode. $details"
+    }
 }
 
 function Get-Api {

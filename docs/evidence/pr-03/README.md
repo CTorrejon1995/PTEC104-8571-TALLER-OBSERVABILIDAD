@@ -1,3 +1,22 @@
+# Evidencias PR #3
+
+Registro organizado del bloque pr-03. Las capturas y los resultados mantienen sus nombres originales.
+
+> Las secciones documentales siguientes reproducen las notas anteriores e indican su archivo de origen; no representan nuevas ejecuciones de pruebas.
+
+## Archivos de evidencia
+
+| Archivo | Tipo |
+|---|---|
+| [pr03-config-windows.png](screenshots/pr03-config-windows.png) | screenshots |
+| [pr03-containers-windows.png](screenshots/pr03-containers-windows.png) | screenshots |
+| [pr03-integration-windows.png](screenshots/pr03-integration-windows.png) | screenshots |
+| [pr03-native-validation.json](results/pr03-native-validation.json) | results |
+
+## Registro: pr03-windows-validation.md
+
+*Fuente histÃ³rica: `docs/evidence/pr03-windows-validation.md`.*
+
 # PR #3 — Validación real en Windows
 
 Fecha: 5 de noviembre de 2026. Ejecución realizada por Benja en su equipo Windows con Docker Desktop.
@@ -12,3 +31,6 @@ Fecha: 5 de noviembre de 2026. Ejecución realizada por Benja en su equipo Windo
 Las imágenes son las capturas originales proporcionadas durante la ejecución. El JSON visible del probe identifica un registro sintético de nivel error; la consulta usa job=cloud-logs, level=error y su identificador nuevo.
 
 Esta evidencia corresponde al PR #3. No demuestra todavía dashboards, alertas Webhook ni trazas distribuidas, que corresponden a los próximos bloques.
+
+---
+

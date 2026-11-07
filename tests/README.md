@@ -56,7 +56,7 @@ python -m unittest discover -s tests/validation -p test_generator.py -v
 
 La prueba opcional `integration/test_logs_native.py` usa binarios oficiales de Loki y Promtail y Python estándar, sin Docker. Si se proporciona `--pwsh`, también ejecuta el mismo script PowerShell contra el pipeline vivo. Comprueba filtros, timestamps y continuidad después de reiniciar ambos servicios. Los paths y puertos de las configuraciones se adaptan a un directorio temporal; las etapas de procesamiento se conservan.
 
-El resultado del entorno de preparación está en `docs/evidence/pr03-native-validation.json`. La ejecución posterior aprobada en Docker Desktop para Windows se registra en `docs/evidence/pr03-windows-validation.md`, con sus capturas.
+El resultado del entorno de preparación está en `docs/evidence/pr-03/results/pr03-native-validation.json`. La ejecución posterior aprobada en Docker Desktop para Windows se registra en `docs/evidence/pr-03/README.md#registro-pr03-windows-validation-md`, con sus capturas.
 
 ## PR #4 — Grafana y Webhook
 
@@ -67,7 +67,7 @@ En Windows, con Docker Desktop y el stack iniciado:
 .\dev.ps1 test -Integration
 ```
 
-La integración ejecuta métricas, logs y `validation/test-grafana.ps1`. Esta última verifica las dos fuentes, el dashboard, las consultas y el envío real de una alerta. Cambia temporalmente solo Grafana a umbral -1 % / 0s y restaura 80 % / 1m en `finally`. El receptor no recibe un POST artificial para aprobar la prueba. El resultado queda en `docs/evidence/pr04-windows-validation.json`.
+La integración ejecuta métricas, logs y `validation/test-grafana.ps1`. Esta última verifica las dos fuentes, el dashboard, las consultas y el envío real de una alerta. Cambia temporalmente solo Grafana a umbral -1 % / 0s y restaura 80 % / 1m en `finally`. El receptor no recibe un POST artificial para aprobar la prueba. El resultado queda en `docs/evidence/pr-04/results/pr04-windows-validation.json`.
 
 Los mantenedores pueden ejecutar `python -m unittest discover -s tests/validation -p 'test_*.py' -v` para comprobar generador y receptor. No es necesario instalar Python en Windows para el flujo normal.
 
