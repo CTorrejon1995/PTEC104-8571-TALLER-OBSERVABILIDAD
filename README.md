@@ -222,6 +222,30 @@ Estos enlaces funcionan **después de iniciar Docker Compose** y desde el equipo
 
 **Grafana (laboratorio):** usuario `admin`, contraseña inicial `observability-lab`, salvo que se cambien en `.env`. El agente SNMP y `service-b` solo se alcanzan desde la red interna de Docker. Los puertos `4317` y `4318` son receptores OTLP del Collector, no interfaces web.
 
+## Consultas PromQL
+
+### Porcentaje de utilización de CPU
+
+```promql
+100 * (1 - avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])))
+```
+
+La consulta calcula el porcentaje de tiempo no ocioso promedio entre los CPU lógicos observados por Node Exporter. La ventana de cinco minutos suaviza variaciones puntuales.
+
+### Ancho de banda entrante en Mbps
+
+```promql
+sum by (instance, ifName) (rate(ifHCInOctets{ifName!="lo"}[5m]) * 8 / 1000000)
+```
+
+### Ancho de banda saliente en Mbps
+
+```promql
+sum by (instance, ifName) (rate(ifHCOutOctets{ifName!="lo"}[5m]) * 8 / 1000000)
+```
+
+Los contadores SNMP se expresan en octetos. `rate()` calcula octetos por segundo; multiplicar por ocho convierte a bits por segundo y dividir por un millón convierte a megabits por segundo (Mbps, base decimal). Los nombres de interfaz se incorporan como etiqueta `ifName`.
+
 ## Documentación y evidencias
 
 | Documento | Contenido |
