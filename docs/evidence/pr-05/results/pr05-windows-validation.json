@@ -1,6 +1,6 @@
 {
     "status":  "passed",
-    "started_at":  "2026-11-07T15:44:47.6056119Z",
+    "started_at":  "2026-11-07T15:59:17.2925309Z",
     "environment":  "windows-docker-compose",
     "platform":  "Microsoft Windows NT 10.0.26300.0",
     "checks":  [
@@ -13,49 +13,49 @@
     "simulation":  "Worker lookup deliberately waits 40ms or 600ms; HTTP requests, SDK spans, export and Jaeger storage are real.",
     "fast":  {
                  "scenario":  "fast",
-                 "test_run":  "pr5-6ce7949fe8c3490f8087fd1b0446199a",
-                 "trace_id":  "677b2a7030534be13ef8a6df693c3387",
-                 "jaeger_url":  "http://127.0.0.1:16686/trace/677b2a7030534be13ef8a6df693c3387",
+                 "test_run":  "pr5-5eb6db9fe31645769d9ebb6b1f36cf30",
+                 "trace_id":  "670ab493fe88973c3fcf7ac503a6b191",
+                 "jaeger_url":  "http://127.0.0.1:16686/trace/670ab493fe88973c3fcf7ac503a6b191",
                  "spans":  6,
                  "services":  [
                                   "service-a",
                                   "service-b"
                               ],
                  "cross_service_parent_reference":  true,
-                 "root_duration_ms":  71.211,
-                 "simulated_query_duration_ms":  40.171,
+                 "root_duration_ms":  70.297,
+                 "simulated_query_duration_ms":  40.116,
                  "configured_delay_ms":  40,
                  "longest_leaf":  {
                                       "operation":  "simulated-db-query",
                                       "service":  "service-b",
-                                      "duration_ms":  40.171,
-                                      "root_percent":  56.41
+                                      "duration_ms":  40.116,
+                                      "root_percent":  57.07
                                   },
                  "trace_file":  "pr05-windows-fast-trace.json"
              },
     "slow":  {
                  "scenario":  "slow",
-                 "test_run":  "pr5-843296fb307d4df6819755997e5e85d9",
-                 "trace_id":  "974643982a8559600f2b409336f289f4",
-                 "jaeger_url":  "http://127.0.0.1:16686/trace/974643982a8559600f2b409336f289f4",
+                 "test_run":  "pr5-2d4f7ccc0b574155a1ba0dd46d6f8c37",
+                 "trace_id":  "256ecdfc0b10612916240f7e3020eb97",
+                 "jaeger_url":  "http://127.0.0.1:16686/trace/256ecdfc0b10612916240f7e3020eb97",
                  "spans":  6,
                  "services":  [
                                   "service-a",
                                   "service-b"
                               ],
                  "cross_service_parent_reference":  true,
-                 "root_duration_ms":  627.641,
-                 "simulated_query_duration_ms":  600.106,
+                 "root_duration_ms":  627.621,
+                 "simulated_query_duration_ms":  600.111,
                  "configured_delay_ms":  600,
                  "longest_leaf":  {
                                       "operation":  "simulated-db-query",
                                       "service":  "service-b",
-                                      "duration_ms":  600.106,
-                                      "root_percent":  95.61
+                                      "duration_ms":  600.111,
+                                      "root_percent":  95.62
                                   },
                  "trace_file":  "pr05-windows-slow-trace.json"
              },
-    "slow_minus_fast_root_ms":  556.43,
+    "slow_minus_fast_root_ms":  557.324,
     "analysis_file":  "pr05-windows-analysis.md",
-    "finished_at":  "2026-11-07T15:44:51.5124952Z"
+    "finished_at":  "2026-11-07T15:59:20.5996285Z"
 }

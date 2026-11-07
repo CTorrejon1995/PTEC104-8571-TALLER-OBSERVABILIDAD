@@ -18,7 +18,7 @@ if (-not (Test-Path .env)) { Copy-Item .env.example .env }
 .\dev.ps1 test -Integration
 ```
 
-Si Windows PowerShell bloquea scripts, `Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned` habilita el procedimiento solo para esa ventana. La guía detallada está en [PR04_GRAFANA.md](PR04_GRAFANA.md).
+Si Windows PowerShell bloquea scripts, `Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned` habilita el procedimiento solo para esa ventana. La guía detallada está en [PR04_GRAFANA.md](PR04.md#pr04_grafana).
 
 La configuración completa define trece servicios. A los nueve de métricas, logs y Grafana/Webhook se suman Collector, Jaeger y los dos microservicios HTTP. Los datos de métricas, logs, posiciones y avisos utilizan volúmenes; `dev.ps1 down` detiene el entorno sin eliminarlos. Jaeger utiliza memoria y pierde las trazas activas al reiniciarse, por lo que se conservan sus JSON y capturas.
 
@@ -26,7 +26,7 @@ La configuración completa define trece servicios. A los nueve de métricas, log
 
 Prometheus obtiene métricas de sí mismo, de Node Exporter y del agente de red mediante SNMP Exporter. La integración verificó los tres targets UP y la disponibilidad de node_cpu_seconds_total, ifHCInOctets e ifHCOutOctets.
 
-El generador escribe JSON en un volumen compartido; Promtail extrae timestamp y level y envía las líneas a Loki. La integración crea un probe nuevo, lo encuentra mediante LogQL con level=error y verifica info, warn y error. No se acepta un log histórico cualquiera como prueba de ingesta actual. Guía: [PR03_LOGS.md](PR03_LOGS.md).
+El generador escribe JSON en un volumen compartido; Promtail extrae timestamp y level y envía las líneas a Loki. La integración crea un probe nuevo, lo encuentra mediante LogQL con level=error y verifica info, warn y error. No se acepta un log histórico cualquiera como prueba de ingesta actual. Guía: [PR03_LOGS.md](PR03.md#pr03_logs).
 
 ### Dashboard y alerta
 
@@ -38,7 +38,7 @@ La regla normal evalúa CPU >80 % durante 1 minuto, cada 10 segundos. La prueba 
 
 ### Validación realizada
 
-La ejecución completa de Windows aprobó validación estática, métricas, logs y Grafana/Webhook. El terminal informó `Pruebas de integracion del stack aprobadas.` y verificó la restauración de la regla normal. Las capturas posteriores muestran el dashboard, la regla Normal y avisos firing/resolved para la misma prueba. El estado y los registros están en [PR04_VALIDACION.md](PR04_VALIDACION.md).
+La ejecución completa de Windows aprobó validación estática, métricas, logs y Grafana/Webhook. El terminal informó `Pruebas de integracion del stack aprobadas.` y verificó la restauración de la regla normal. Las capturas posteriores muestran el dashboard, la regla Normal y avisos firing/resolved para la misma prueba. El estado y los registros están en [PR04_VALIDACION.md](PR04.md#pr04_validacion).
 
 El script escribió `docs/evidence/pr04-windows-validation.json` en el PC de Benja. Debe conservarse y añadirse al commit desde ese clon; no se inventa aquí su contenido. La preparación Linux tiene sus propios informes nativos y no se presenta como ejecución Docker de Windows.
 
@@ -53,7 +53,7 @@ Se añaden Collector Contrib 0.164.0, Jaeger 2.23.0 y dos microservicios Python 
 .\dev.ps1 test -Integration
 ~~~
 
-La última fase de la integración crea dos solicitudes nuevas, consulta las trazas a Jaeger, comprueba relaciones padre-hijo y guarda pr05-windows-validation.json, los JSON de las trazas y pr05-windows-analysis.md. La URL de la transacción lenta queda impresa para abrirla en la UI. Guía reproducible: [PR05_TRAZAS.md](PR05_TRAZAS.md).
+La última fase de la integración crea dos solicitudes nuevas, consulta las trazas a Jaeger, comprueba relaciones padre-hijo y guarda pr05-windows-validation.json, los JSON de las trazas y pr05-windows-analysis.md. La URL de la transacción lenta queda impresa para abrirla en la UI. Guía reproducible: [PR05_TRAZAS.md](PR05.md#pr05_trazas).
 
 La preparación aprobó validadores de configuración, sintaxis, nueve pruebas unitarias y la captura del OTLP real de dos procesos HTTP. El backend nativo no pudo arrancar en aquel ejecutor por visibilidad del PID. Posteriormente, Benja aprobó la recepción y consulta de Jaeger y la integración completa en Docker Desktop para Windows; las capturas originales se incluyen en la sección de evidencia.
 

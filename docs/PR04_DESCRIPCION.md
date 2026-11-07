@@ -1,5 +1,0 @@
-Grafana carga automáticamente Prometheus, Loki y un Dashboard Operativo con CPU, storage seleccionable, tráfico SNMP y logs con filtro de severidad. La regla de CPU >80 % durante 1 minuto envía avisos a un receptor Webhook local con persistencia SQLite; fuentes, dashboard, regla, contacto y política se versionan mediante provisioning.
-
-La integración comprueba el recorrido real de la alerta sin aumentar carga: mantiene la consulta de CPU, baja temporalmente el umbral a -1 %, espera un aviso firing del UID y test_run de esa ejecución y restaura 80 % / 1 minuto. La lectura UTF-8 explícita y el reconocimiento por UID corrigen la incompatibilidad detectada en Windows PowerShell.
-
-Validado en Windows con Docker Desktop: métricas y logs aprobados, consultas de Grafana comprobadas, Webhook recibido y regla normal restaurada. Se incorporan capturas originales del dashboard, la regla y avisos firing/resolved. También pasaron las pruebas del receptor y la integración Linux con el valor ANSI predeterminado emulado y reinicio de Grafana. Evidencias y límites en `docs/PR04_VALIDACION.md`.
