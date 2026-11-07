@@ -102,10 +102,10 @@ El escenario slow busca hacer visible el tiempo de espera de la operación simul
 
 ## 5. Evidencia y análisis observado
 
-- [Integración completa aprobada](evidence/pr05-integration-windows.png).
-- [Traza lenta abierta en Jaeger](evidence/pr05-jaeger-trace-windows.png).
-- [Prueba independiente y trece contenedores Running](evidence/pr05-traces-windows.png).
-- [Registro de observación y análisis de latencia](evidence/pr05-windows-validation.md).
+- [Integración completa aprobada](evidence/pr-05/screenshots/pr05-integration-windows.png).
+- [Traza lenta abierta en Jaeger](evidence/pr-05/screenshots/pr05-jaeger-trace-windows.png).
+- [Prueba independiente y trece contenedores Running](evidence/pr-05/screenshots/pr05-traces-windows.png).
+- [Registro de observación y análisis de latencia](evidence/pr-05/README.md#registro-pr05-windows-validation-md).
 
 La traza lenta de la ejecución completa tiene ID 50ec9f0ff81fd802f4edf1c76f4e0e62. Jaeger muestra dos servicios, seis spans y una duración total redondeada de 627 ms. La prueba midió 600.125 ms en simulated-db-query de service-b, aproximadamente el 96 % de ese total. El árbol hace visible la espera dentro de la llamada HTTP; los tiempos inclusivos de padres e hijos no se suman.
 

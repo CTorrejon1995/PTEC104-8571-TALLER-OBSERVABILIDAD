@@ -1,0 +1,49 @@
+{
+  "prepared_at_utc": "2026-11-06T00:26:32.900276+00:00",
+  "base_commit": "2fa73e2acfcac6bdb54f870cff6bb8c343ed9936",
+  "versions": {
+    "jaeger": "2.23.0",
+    "collector_contrib": "0.164.0",
+    "opentelemetry_python": "1.45.2",
+    "docker_python": "3.12.12"
+  },
+  "official_assets_sha256_verified": {
+    "collector": {
+      "name": "otelcol-contrib_0.164.0_linux_amd64.tar.gz",
+      "url": "https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v0.164.0/otelcol-contrib_0.164.0_linux_amd64.tar.gz",
+      "digest": "sha256:f0c1ce9f661399beb4a58b711924716e08ea70c3802db0715fcfde3cbbada2d4",
+      "size": 115591854
+    },
+    "jaeger": {
+      "name": "jaeger-2.23.0-linux-amd64.tar.gz",
+      "url": "https://github.com/jaegertracing/jaeger/releases/download/v2.23.0/jaeger-2.23.0-linux-amd64.tar.gz",
+      "digest": "sha256:4b7bd152ed31d2205e4e73b873d289c61cd3fabaecc86443070143448d40b753",
+      "size": 66194031
+    }
+  },
+  "verified_docker_images": {
+    "jaeger_image": {
+      "name": "2.23.0",
+      "digest": "sha256:3823829974ccfc2485d2e48b165579091f32295022ae80ca49704e2f4834116e"
+    },
+    "collector_image": {
+      "name": "0.164.0",
+      "digest": "sha256:340c9ca6a36617084c6661bdc4f0fe92b7cda5a805d61673ec8db375fddc522b"
+    }
+  },
+  "checks": {
+    "compose_5_6_1_model": "passed",
+    "jaeger_native_validate_config": "passed",
+    "collector_native_validate_config": "passed",
+    "powershell_parser": "passed",
+    "unit_tests": {
+      "passed": 9
+    },
+    "two_real_http_services_and_sdk_otlp_capture": "passed",
+    "powershell_span_graph_helpers": "passed with contract fixture adapted from real SDK export; not a backend ingestion test",
+    "existing_nine_compose_service_definitions": "preserved exactly",
+    "configured_service_count": 13
+  },
+  "backend_runtime": "Not validated here: Jaeger process metrics cannot access numeric /proc PID entries in preparation executor. No sandbox changes were attempted.",
+  "windows_full_integration_and_jaeger_ui": "pending execution on student PC"
+}

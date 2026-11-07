@@ -34,7 +34,7 @@ $report = [ordered]@{
 }
 if ($nativeMode) { $report.mode = 'native-binaries' }
 if ([string]::IsNullOrWhiteSpace($EvidencePath)) {
-    $EvidencePath = Join-Path $ProjectRoot 'docs/evidence/pr04-windows-validation.json'
+    $EvidencePath = Join-Path $ProjectRoot 'docs/evidence/pr-04/results/pr04-windows-validation.json'
 }
 $temporaryDir = $null
 $originalRuleBytes = $null

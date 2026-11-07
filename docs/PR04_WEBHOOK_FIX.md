@@ -1,6 +1,6 @@
 # Corrección de la comprobación Webhook en Windows
 
-La primera ejecución de Benja llegó a la prueba controlada de Grafana, agotó la espera del aviso y restauró correctamente la regla normal de CPU > 80 % durante 1 minuto. La captura real está en `evidence/pr04-webhook-timeout-windows.png`. No se registra esa ejecución como aprobada.
+La primera ejecución de Benja llegó a la prueba controlada de Grafana, agotó la espera del aviso y restauró correctamente la regla normal de CPU > 80 % durante 1 minuto. La captura real está en `evidence/pr-04/screenshots/pr04-webhook-timeout-windows.png`. No se registra esa ejecución como aprobada.
 
 ## Problema encontrado
 

@@ -1,0 +1,26 @@
+{
+  "record_type": "summary_of_original_student_screenshots",
+  "observation_date": "2026-11-05",
+  "platform": "Windows with Docker Desktop and PowerShell; exact PowerShell version not captured",
+  "full_stack_integration": "passed",
+  "normal_cpu_rule_restored": "CPU > 80 percent for 1 minute; checked by integration script",
+  "dashboard_ui": "CPU, Docker storage mount, SNMP network and Loki logs visible",
+  "normal_rule_ui": "Normal, threshold above 80, evaluation interval 10 seconds",
+  "webhook": {
+    "test_run": "pr4-784177d6acb445e7ac34db2aae24f07a",
+    "firing_event": 9,
+    "resolved_event": 10,
+    "cpu_percent_approx": 1.6248,
+    "temporary_threshold_percent": -1,
+    "resolved_state_reason": "MissingSeries"
+  },
+  "original_screenshots": [
+    "pr04-stack-integration-windows.png",
+    "pr04-dashboard-windows.png",
+    "pr04-alert-rule-windows.png",
+    "pr04-webhook-windows.png",
+    "pr04-webhook-resolved-windows.png"
+  ],
+  "student_generated_report": "pr04-windows-validation.json exists on student PC per terminal output; its bytes were not uploaded here",
+  "scope": "Implementation and evidence through PR #4; distributed tracing in PR #5 remains pending"
+}

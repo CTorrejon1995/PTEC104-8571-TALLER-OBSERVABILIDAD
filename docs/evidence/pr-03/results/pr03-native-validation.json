@@ -1,0 +1,19 @@
+{
+  "executed_at": "2026-11-05T20:16:51.727241+00:00",
+  "environment": "Linux native processes; no Docker daemon",
+  "loki": "3.6.19",
+  "promtail": "3.6.11",
+  "checks": [
+    "Real Loki and Promtail ready endpoints",
+    "Fresh file log ingested through Promtail and filtered by level",
+    "Wrong severity filter excludes the error probe",
+    "All JSON severities and event timestamps extracted correctly",
+    "Real PowerShell log integration script against the live pipeline",
+    "PowerShell test rejects a missing fresh probe",
+    "Promtail restart resumes collection using its positions file",
+    "Loki restart recovers stored logs and accepts new logs"
+  ],
+  "windows_docker_validation": "Pending execution on the user's PC",
+  "powershell_output": "Loki: READY\nPromtail: READY\nProbe nuevo recibido en Loki: pr3-probe-8db2db55e884411f9ea44f11701d387c\nFiltro LogQL comprobado: {job=\"cloud-logs\",level=\"error\"} |= \"pr3-probe-8db2db55e884411f9ea44f11701d387c\"\nSeveridades JSON indexadas: info, warn, error.\nPruebas de integracion de logs aprobadas.\n",
+  "status": "passed"
+}

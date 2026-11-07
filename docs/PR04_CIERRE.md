@@ -37,7 +37,7 @@ git add .env.example .gitignore README.md dev.ps1 docker-compose.yml dashboards 
 git diff --cached --stat
 ```
 
-Revisar que aparezcan las configuraciones, scripts, documentación y capturas del PR #4. También debe incorporarse tu archivo generado `docs/evidence/pr04-windows-validation.json`.
+Revisar que aparezcan las configuraciones, scripts, documentación y capturas del PR #4. También debe incorporarse tu archivo generado `docs/evidence/pr-04/results/pr04-windows-validation.json`.
 
 ```powershell
 git commit -m "feat(grafana): add operational dashboard and CPU webhook alert"

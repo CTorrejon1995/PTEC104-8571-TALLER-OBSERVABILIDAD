@@ -6,15 +6,15 @@
 
 | Comprobación | Resultado y evidencia | Alcance |
 |---|---|---|
-| Compose, configuraciones y scripts | Validación estática aprobada en la ejecución completa de Windows | Captura `evidence/pr04-stack-integration-windows.png` |
-| Pruebas del generador y receptor | Tres pruebas del generador y tres pruebas HTTP/SQLite aprobadas en preparación | Registro `evidence/pr04-preparation-checks.json` |
-| Pipeline real Linux y reinicio | Aprobado, incluida la lectura UTF-8 con valor predeterminado ANSI emulado | `evidence/pr04-native-validation.json`; omite SNMP y utiliza un filesystem Linux local |
+| Compose, configuraciones y scripts | Validación estática aprobada en la ejecución completa de Windows | Captura `evidence/pr-04/screenshots/pr04-stack-integration-windows.png` |
+| Pruebas del generador y receptor | Tres pruebas del generador y tres pruebas HTTP/SQLite aprobadas en preparación | Registro `evidence/pr-04/results/pr04-preparation-checks.json` |
+| Pipeline real Linux y reinicio | Aprobado, incluida la lectura UTF-8 con valor predeterminado ANSI emulado | `evidence/pr-04/results/pr04-native-validation.json`; omite SNMP y utiliza un filesystem Linux local |
 | Métricas en Docker Desktop | Prometheus READY; prometheus, node-exporter y snmp-device UP; CPU y contadores de red disponibles | Integración completa de Windows |
 | Ingesta de logs | Probe nuevo recibido en Loki; filtro level=error y severidades info/warn/error comprobados | Integración completa de Windows |
 | Fuentes y consultas de Grafana | Prometheus/Loki OK; consultas de CPU, storage, SNMP y logs aprobadas | Integración completa de Windows |
-| Dashboard | Cuatro paneles con datos; montaje /mnt/docker-desktop-disk; actualización de 5 segundos | `evidence/pr04-dashboard-windows.png` |
-| Regla normal | Estado Normal, CPU alrededor de 1,21 %, umbral >80 y evaluación cada 10 segundos; la integración verificó for=1m | `evidence/pr04-alert-rule-windows.png` y salida de integración |
-| Webhook controlado | Evento 9 firing y evento 10 resolved para el mismo test_run | `evidence/pr04-webhook-windows.png` y `evidence/pr04-webhook-resolved-windows.png` |
+| Dashboard | Cuatro paneles con datos; montaje /mnt/docker-desktop-disk; actualización de 5 segundos | `evidence/pr-04/screenshots/pr04-dashboard-windows.png` |
+| Regla normal | Estado Normal, CPU alrededor de 1,21 %, umbral >80 y evaluación cada 10 segundos; la integración verificó for=1m | `evidence/pr-04/screenshots/pr04-alert-rule-windows.png` y salida de integración |
+| Webhook controlado | Evento 9 firing y evento 10 resolved para el mismo test_run | `evidence/pr-04/screenshots/pr04-webhook-windows.png` y `evidence/pr-04/screenshots/pr04-webhook-resolved-windows.png` |
 | Restauración | CPU >80 % / 1 minuto, sin configuración de prueba, verificada al terminar | Mensaje de restauración y aprobación en la integración completa |
 
 El proyecto define nueve servicios hasta este PR. La evidencia de Windows demuestra sus recorridos funcionales; no se añade una captura inexistente de `docker compose ps` con esos nueve servicios.
@@ -33,11 +33,11 @@ La primera captura fallida se conserva para documentar el diagnóstico, no como 
 
 ## Registros
 
-- [Integración completa de Windows](evidence/pr04-stack-windows-validation.md).
-- [Prueba independiente de Grafana/Webhook](evidence/pr04-grafana-windows-validation.md).
-- [Dashboard](evidence/pr04-dashboard-windows.md).
-- [Regla normal](evidence/pr04-alert-rule-windows.md).
-- [Avisos firing y resolved](evidence/pr04-webhook-windows.md).
-- [Resumen derivado de capturas originales](evidence/pr04-windows-evidence-summary.json).
+- [Integración completa de Windows](evidence/pr-04/README.md#registro-pr04-stack-windows-validation-md).
+- [Prueba independiente de Grafana/Webhook](evidence/pr-04/README.md#registro-pr04-grafana-windows-validation-md).
+- [Dashboard](evidence/pr-04/README.md#registro-pr04-dashboard-windows-md).
+- [Regla normal](evidence/pr-04/README.md#registro-pr04-alert-rule-windows-md).
+- [Avisos firing y resolved](evidence/pr-04/README.md#registro-pr04-webhook-windows-md).
+- [Resumen derivado de capturas originales](evidence/pr-04/results/pr04-windows-evidence-summary.json).
 
-El script guarda `evidence/pr04-windows-validation.json` en el PC de Benja. Ese archivo debe permanecer en su clon y añadirse al commit. No se reconstruyen aquí sus bytes: el paquete incluye las capturas originales y un resumen identificado expresamente como derivado de ellas.
+El script guarda `evidence/pr-04/results/pr04-windows-validation.json` en el PC de Benja. Ese archivo debe permanecer en su clon y añadirse al commit. No se reconstruyen aquí sus bytes: el paquete incluye las capturas originales y un resumen identificado expresamente como derivado de ellas.

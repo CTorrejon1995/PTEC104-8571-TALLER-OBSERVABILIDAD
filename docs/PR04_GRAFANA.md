@@ -70,7 +70,7 @@ La prueba:
 4. Recrea solamente Grafana para cargar esa configuración. El resto del stack sigue funcionando.
 5. Espera una notificación `firing` enviada por Grafana al receptor, con el identificador de esta ejecución y el valor real de CPU. No envía manualmente un aviso para simular éxito.
 6. En un bloque `finally`, restaura el montaje de archivos original, recrea Grafana y verifica **80 % / 1 minuto**, sin etiqueta de prueba.
-7. Guarda `docs/evidence/pr04-windows-validation.json`, incluyendo resultado, valores y el aviso recibido. Un error queda registrado como `failed`, nunca como aprobado.
+7. Guarda `docs/evidence/pr-04/results/pr04-windows-validation.json`, incluyendo resultado, valores y el aviso recibido. Un error queda registrado como `failed`, nunca como aprobado.
 
 Esta prueba demuestra evaluación, enrutamiento y entrega del Webhook. **No demuestra que el equipo haya superado realmente el 80 %.** El aviso conserva la anotación de prueba para distinguirlo de un incidente normal.
 

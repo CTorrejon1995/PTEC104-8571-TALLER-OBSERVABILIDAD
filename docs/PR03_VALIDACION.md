@@ -19,6 +19,6 @@ Los binarios de prueba se obtuvieron de los releases oficiales y sus SHA-256 se 
 
 La prueba nativa adapta únicamente los paths de archivos y puertos a un directorio temporal. Usa el generador y el pipeline JSON del proyecto; las consultas llegan a Loki real. El script PowerShell se ejecuta contra ese mismo pipeline.
 
-Después, Benja ejecutó la validación, el arranque y la integración completa en Docker Desktop para Windows. Esta ejecución también comprobó la inserción del probe mediante Docker Compose. Ver [evidence/pr03-windows-validation.md](evidence/pr03-windows-validation.md) y sus tres capturas originales.
+Después, Benja ejecutó la validación, el arranque y la integración completa en Docker Desktop para Windows. Esta ejecución también comprobó la inserción del probe mediante Docker Compose. Ver [evidence/pr-03/README.md#registro-pr03-windows-validation-md](evidence/pr-03/README.md#registro-pr03-windows-validation-md) y sus tres capturas originales.
 
-El registro de preparación está en [evidence/pr03-native-validation.json](evidence/pr03-native-validation.json). Su campo Windows pendiente describe el estado histórico de esa ejecución; la validación posterior de Windows se documenta por separado. Las capturas de Grafana y Jaeger corresponden a los siguientes PR.
+El registro de preparación está en [evidence/pr-03/results/pr03-native-validation.json](evidence/pr-03/results/pr03-native-validation.json). Su campo Windows pendiente describe el estado histórico de esa ejecución; la validación posterior de Windows se documenta por separado. Las capturas de Grafana y Jaeger corresponden a los siguientes PR.
