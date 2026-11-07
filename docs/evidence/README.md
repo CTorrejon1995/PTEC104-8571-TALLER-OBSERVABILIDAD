@@ -15,8 +15,8 @@ Las evidencias se agrupan por **etapa de PR** (no necesariamente por el numero a
 - `pr-XX/results/`: reportes JSON, registros y analisis generados.
 - `pr-XX/README.md`: texto consolidado y procedencia de cada PR.
 
-## Compatibilidad temporal
+## Rutas canonicas
 
-El documento `docs/INFORME.md` no fue alterado. Algunas evidencias permanecen tambien en la raiz de `docs/evidence/` para que sus enlaces historicos sigan funcionando. Cuando se autorice la etapa de actualizacion de enlaces del informe, esas copias se podran retirar.
+Las evidencias se almacenan exclusivamente en las carpetas pr-XX/. Los enlaces de docs/INFORME.md fueron actualizados para usar estas rutas.
 
-Las pruebas de Grafana y Jaeger ya escriben sus nuevos resultados en `pr-04/results/` y `pr-05/results/` respectivamente.
+Las pruebas de Grafana y Jaeger escriben resultados en pr-04/results/ y pr-05/results/ respectivamente.

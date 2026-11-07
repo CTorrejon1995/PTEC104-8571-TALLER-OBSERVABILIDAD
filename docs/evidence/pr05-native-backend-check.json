@@ -1,6 +1,0 @@
-{
-  "status": "not_run_environment_limit",
-  "reason": "jaeger cannot initialize process metrics: numeric /proc PID visibility is unavailable in this executor.",
-  "backend_runtime_validated": false,
-  "next_validation": "Run the real backend with Docker Desktop and tests/validation/test-traces.ps1."
-}
